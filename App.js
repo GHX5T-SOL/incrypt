@@ -14,7 +14,7 @@ SplashScreen.preventAutoHideAsync();
 import { theme } from './src/theme';
 
 // Wallet Connection
-import { ConnectionProvider } from '@solana/wallet-adapter-react';
+import { ConnectionProvider } from './src/contexts/ConnectionProvider';
 import { WalletProvider } from './src/contexts/WalletProvider';
 import { MobileWalletAdapterProvider } from './src/contexts/MobileWalletAdapterProvider';
 
