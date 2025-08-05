@@ -1,5 +1,5 @@
 {
-  "name": "Incrypt",
+  "name": "incrypt",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -9,8 +9,20 @@
     "web": "expo start --web",
     "eject": "expo eject",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
     "build:android": "eas build -p android",
-    "lint": "eslint ."
+    "build:android-dev": "eas build -p android --profile development",
+    "build:android-preview": "eas build -p android --profile preview",
+    "build:android-prod": "eas build -p android --profile production",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "prebuild": "npm run lint && npm run test:ci",
+    "ota:build": "node scripts/ota-update.js build-preview",
+    "ota:update": "node scripts/ota-update.js publish-update",
+    "ota:setup": "node scripts/ota-update.js demo-setup"
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
@@ -20,9 +32,12 @@
     "@react-navigation/native-stack": "^6.9.13",
     "@solana-mobile/mobile-wallet-adapter-protocol": "^2.0.1",
     "@solana-mobile/mobile-wallet-adapter-protocol-web3js": "^2.0.1",
-    "@solana-mobile/mobile-wallet-adapter-react-native": "^2.0.1",
+    "@solana-mobile/wallet-adapter-mobile": "^2.2.2",
     "@solana/spl-token": "^0.3.8",
     "@solana/web3.js": "^1.78.4",
+    "@kamino-finance/klend-sdk": "^7.0.6",
+    "@mrgnlabs/marginfi-client-v2": "^1.0.0",
+    "@mrgnlabs/mrgn-common": "^1.0.0",
     "axios": "^1.4.0",
     "bignumber.js": "^9.1.1",
     "bs58": "^5.0.0",
@@ -40,13 +55,20 @@
     "react-native-screens": "~3.20.0",
     "react-native-svg": "13.4.0",
     "react-native-toast-message": "^2.1.6",
-    "victory-native": "^36.6.11"
+    "victory-native": "^36.6.11",
+    "react-native-linear-gradient": "^2.8.2",
+    "react-native-chart-kit": "^6.12.0",
+    "react-native-qrcode-scanner": "^1.5.5",
+    "react-native-permissions": "^3.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/jest-native": "^5.4.2",
     "@testing-library/react-native": "^12.1.3",
+    "@types/jest": "^29.5.4",
     "@types/react": "~18.0.14",
+    "@types/react-native": "^0.72.2",
     "babel-jest": "^29.6.2",
     "eslint": "^8.46.0",
     "eslint-plugin-react": "^7.33.1",
@@ -59,8 +81,31 @@
   "private": true,
   "jest": {
     "preset": "jest-expo",
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/*.stories.{js,jsx,ts,tsx}",
+      "!src/**/*.test.{js,jsx,ts,tsx}",
+      "!src/**/*.spec.{js,jsx,ts,tsx}"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    },
+    "testMatch": [
+      "<rootDir>/__tests__/**/*.{js,jsx,ts,tsx}",
+      "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",
+      "<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}"
+    ],
+    "testEnvironment": "node",
+    "testTimeout": 10000
   }
 }

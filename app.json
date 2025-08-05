@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Solana Meteora Mobile",
-    "slug": "solana-meteora-mobile",
+    "name": "Incrypt",
+    "slug": "incrypt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,31 +9,46 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#121212"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.incrypt.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#121212"
+        "backgroundColor": "#000000"
       },
-      "package": "com.solanameteora.mobile"
+      "package": "com.incrypt.app",
+      "permissions": [
+        "INTERNET",
+        "CAMERA",
+        "VIBRATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "f79ed6da-1179-4a55-b54f-7659fe9e773c"
       }
     },
-    "plugins": [
-      "expo-crypto"
-    ]
+    "scheme": "incrypt",
+    "owner": "ghxstxbt",
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/f79ed6da-1179-4a55-b54f-7659fe9e773c",
+      "fallbackToCacheTimeout": 0,
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "requestHeaders": {
+        "expo-channel-name": "demo"
+      }
+    }
   }
 }

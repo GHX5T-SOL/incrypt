@@ -4,600 +4,541 @@ import {
   View,
   Text,
   ScrollView,
-  Image,
   TouchableOpacity,
   Alert,
   StatusBar,
+  Animated,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import {
-  Appbar,
-  Card,
-  Button,
-  TextInput,
-  RadioButton,
-  Divider,
-  ActivityIndicator,
-  useTheme,
-  SegmentedButtons,
-} from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useWallet } from '../contexts/WalletProvider';
-import { useConnection } from '../contexts/ConnectionProvider';
-import { neonStyles } from '../theme';
-import { formatCurrency, formatPercentage } from '../utils/format';
-import Toast from 'react-native-toast-message';
-
-// Mock token data
-const MOCK_TOKENS = [
-  {
-    symbol: 'SOL',
-    name: 'Solana',
-    icon: require('../../assets/tokens/sol.png'),
-    price: 150.25,
-    balance: 10,
-  },
-  {
-    symbol: 'USDC',
-    name: 'USD Coin',
-    icon: require('../../assets/tokens/usdc.png'),
-    price: 1.00,
-    balance: 1500,
-  },
-  {
-    symbol: 'BONK',
-    name: 'Bonk',
-    icon: require('../../assets/tokens/bonk.png'),
-    price: 0.00001234,
-    balance: 10000000,
-  },
-  {
-    symbol: 'JTO',
-    name: 'Jito',
-    icon: require('../../assets/tokens/jto.png'),
-    price: 2.45,
-    balance: 100,
-  },
-  {
-    symbol: 'ORCA',
-    name: 'Orca',
-    icon: require('../../assets/tokens/orca.png'),
-    price: 0.75,
-    balance: 200,
-  },
-];
+import { useWallet } from '../hooks/useWallet';
+import { useMeteora } from '../hooks/useMeteora';
+import { theme } from '../theme';
+import NeonCard from '../components/NeonCard';
+import NeonButton from '../components/NeonButton';
+import { formatUSD, formatPercentage, formatNumber } from '../utils/format';
 
 const CreatePoolScreen = () => {
   const navigation = useNavigation();
-  const theme = useTheme();
-  const { publicKey, balance, sendTransaction } = useWallet();
-  const connection = useConnection();
+  const { connected, balance } = useWallet();
+  const { createPool, loading } = useMeteora();
   
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
   
   // Form state
-  const [poolType, setPoolType] = useState('DLMM'); // 'DLMM' or 'DAMM V2'
+  const [poolType, setPoolType] = useState('DLMM');
   const [token1, setToken1] = useState(null);
   const [token2, setToken2] = useState(null);
   const [token1Amount, setToken1Amount] = useState('');
   const [token2Amount, setToken2Amount] = useState('');
-  const [feeType, setFeeType] = useState('fixed'); // 'fixed', 'linear', or 'exponential'
-  const [fixedFee, setFixedFee] = useState('0.3'); // percentage
+  const [feeType, setFeeType] = useState('fixed');
+  const [fixedFee, setFixedFee] = useState('0.3');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [binSize, setBinSize] = useState('10'); // percentage
+  const [binSize, setBinSize] = useState('10');
   const [showTokenSelector, setShowTokenSelector] = useState(false);
-  const [selectingToken, setSelectingToken] = useState(1); // 1 or 2
-  
-  // Calculate the other token amount based on price ratio when one token amount changes
+  const [selectingToken, setSelectingToken] = useState(1);
+  const [safetyCheck, setSafetyCheck] = useState(null);
+
+  // Mock tokens for demonstration
+  const availableTokens = [
+    { symbol: 'SOL', name: 'Solana', price: 150.25, balance: 10, icon: 'currency-btc' },
+    { symbol: 'USDC', name: 'USD Coin', price: 1.00, balance: 1500, icon: 'currency-usd' },
+    { symbol: 'BONK', name: 'Bonk', price: 0.00001234, balance: 10000000, icon: 'currency-btc' },
+    { symbol: 'JTO', name: 'Jito', price: 2.45, balance: 100, icon: 'currency-btc' },
+    { symbol: 'ORCA', name: 'Orca', price: 0.75, balance: 200, icon: 'currency-btc' },
+  ];
+
   useEffect(() => {
-    if (!token1 || !token2) return;
-    
-    if (token1Amount && !isNaN(parseFloat(token1Amount))) {
-      const amount1 = parseFloat(token1Amount);
-      const token1Price = MOCK_TOKENS.find(t => t.symbol === token1)?.price || 0;
-      const token2Price = MOCK_TOKENS.find(t => t.symbol === token2)?.price || 0;
-      
-      if (token1Price && token2Price) {
-        const amount2 = amount1 * token1Price / token2Price;
-        setToken2Amount(amount2.toFixed(6));
-      }
-    }
-  }, [token1Amount, token1, token2]);
-  
-  useEffect(() => {
-    if (!token1 || !token2) return;
-    
-    if (token2Amount && !isNaN(parseFloat(token2Amount))) {
-      const amount2 = parseFloat(token2Amount);
-      const token1Price = MOCK_TOKENS.find(t => t.symbol === token1)?.price || 0;
-      const token2Price = MOCK_TOKENS.find(t => t.symbol === token2)?.price || 0;
-      
-      if (token1Price && token2Price) {
-        const amount1 = amount2 * token2Price / token1Price;
-        setToken1Amount(amount1.toFixed(6));
-      }
-    }
-  }, [token2Amount, token1, token2]);
-  
-  // Set default price range when tokens are selected
-  useEffect(() => {
-    if (token1 && token2 && poolType === 'DLMM') {
-      const token1Price = MOCK_TOKENS.find(t => t.symbol === token1)?.price || 0;
-      const token2Price = MOCK_TOKENS.find(t => t.symbol === token2)?.price || 0;
-      
-      if (token1Price && token2Price) {
-        const currentPrice = token1Price / token2Price;
-        setMinPrice((currentPrice * 0.9).toFixed(6)); // 10% below current price
-        setMaxPrice((currentPrice * 1.1).toFixed(6)); // 10% above current price
-      }
-    }
-  }, [token1, token2, poolType]);
-  
-  const handleSelectToken = (tokenSymbol) => {
+    startFadeAnimation();
+  }, []);
+
+  const startFadeAnimation = () => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleSelectToken = (token) => {
     if (selectingToken === 1) {
-      if (tokenSymbol === token2) {
-        // Can't select the same token for both positions
-        Alert.alert('Error', 'Please select different tokens for each position');
-        return;
-      }
-      setToken1(tokenSymbol);
+      setToken1(token);
     } else {
-      if (tokenSymbol === token1) {
-        // Can't select the same token for both positions
-        Alert.alert('Error', 'Please select different tokens for each position');
-        return;
-      }
-      setToken2(tokenSymbol);
+      setToken2(token);
     }
-    
     setShowTokenSelector(false);
   };
-  
+
   const openTokenSelector = (tokenPosition) => {
     setSelectingToken(tokenPosition);
     setShowTokenSelector(true);
   };
-  
-  const handleSubmit = async () => {
-    if (!publicKey) {
-      Alert.alert('Error', 'Please connect your wallet first');
-      return;
-    }
+
+  const calculateToken2Amount = () => {
+    if (!token1 || !token2 || !token1Amount) return;
     
+    const amount1 = parseFloat(token1Amount);
+    const token1Price = token1.price;
+    const token2Price = token2.price;
+    
+    const token2Amount = (amount1 * token1Price) / token2Price;
+    setToken2Amount(token2Amount.toFixed(6));
+  };
+
+  useEffect(() => {
+    calculateToken2Amount();
+  }, [token1Amount, token1, token2]);
+
+  const validateForm = () => {
     if (!token1 || !token2) {
       Alert.alert('Error', 'Please select both tokens');
+      return false;
+    }
+    
+    if (!token1Amount || !token2Amount) {
+      Alert.alert('Error', 'Please enter amounts for both tokens');
+      return false;
+    }
+    
+    if (parseFloat(token1Amount) <= 0 || parseFloat(token2Amount) <= 0) {
+      Alert.alert('Error', 'Token amounts must be greater than 0');
+      return false;
+    }
+    
+    if (poolType === 'DLMM' && (!minPrice || !maxPrice)) {
+      Alert.alert('Error', 'Please enter price range for DLMM pool');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const performSafetyCheck = async () => {
+    if (!token1 || !token2) return;
+    
+    try {
+      // In real app, this would call Rugcheck API
+      const safetyScore = Math.floor(Math.random() * 20) + 80; // Mock score 80-100
+      setSafetyCheck({
+        score: safetyScore,
+        safe: safetyScore >= 85,
+        warnings: safetyScore < 90 ? ['Token has moderate risk'] : [],
+      });
+    } catch (error) {
+      console.error('Safety check failed:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (token1 && token2) {
+      performSafetyCheck();
+    }
+  }, [token1, token2]);
+
+  const handleSubmit = async () => {
+    if (!connected) {
+      Alert.alert('Wallet Not Connected', 'Please connect your wallet to create a pool');
       return;
     }
-    
-    if (!token1Amount || parseFloat(token1Amount) <= 0 || !token2Amount || parseFloat(token2Amount) <= 0) {
-      Alert.alert('Error', 'Please enter valid amounts for both tokens');
-      return;
+
+    if (!validateForm()) return;
+
+    if (safetyCheck && !safetyCheck.safe) {
+      Alert.alert(
+        'Safety Warning',
+        'One or more tokens have safety concerns. Do you want to proceed?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Proceed', onPress: submitPool },
+        ]
+      );
+    } else {
+      submitPool();
     }
-    
-    if (poolType === 'DLMM') {
-      if (!minPrice || !maxPrice || parseFloat(minPrice) <= 0 || parseFloat(maxPrice) <= 0) {
-        Alert.alert('Error', 'Please enter valid price range values');
-        return;
-      }
-      if (parseFloat(minPrice) >= parseFloat(maxPrice)) {
-        Alert.alert('Error', 'Min price must be less than max price');
-        return;
-      }
-      if (!binSize || parseFloat(binSize) <= 0) {
-        Alert.alert('Error', 'Please enter a valid bin size');
-        return;
-      }
-    }
-    
-    if (feeType === 'fixed' && (!fixedFee || parseFloat(fixedFee) <= 0)) {
-      Alert.alert('Error', 'Please enter a valid fee percentage');
-      return;
-    }
-    
+  };
+
+  const submitPool = async () => {
     setSubmitting(true);
     
     try {
-      // In a real app, this would create and send a transaction to create the pool
-      // For now, we'll simulate a successful transaction
-      setTimeout(() => {
-        Toast.show({
-          type: 'success',
-          text1: 'Success!',
-          text2: 'You have successfully created a new pool',
-        });
-        setSubmitting(false);
-        navigation.navigate('Pools');
-      }, 2000);
+      const poolData = {
+        type: poolType,
+        tokenA: token1.symbol,
+        tokenB: token2.symbol,
+        amountA: parseFloat(token1Amount),
+        amountB: parseFloat(token2Amount),
+        feeType,
+        fee: parseFloat(fixedFee),
+        minPrice: parseFloat(minPrice),
+        maxPrice: parseFloat(maxPrice),
+        binSize: parseFloat(binSize),
+      };
+
+      // In real app, this would call Meteora API
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      
+      Alert.alert(
+        'Success',
+        'Pool created successfully!',
+        [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]
+      );
     } catch (error) {
       console.error('Error creating pool:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to create pool. Please try again.',
-      });
+      Alert.alert('Error', 'Failed to create pool. Please try again.');
+    } finally {
       setSubmitting(false);
     }
   };
-  
+
+  const getPoolTypeColor = (type) => {
+    return type === poolType ? theme.colors.primary : theme.colors.textSecondary;
+  };
+
   const renderTokenSelector = () => {
+    if (!showTokenSelector) return null;
+
     return (
-      <Card style={styles.tokenSelectorCard}>
-        <Card.Content>
+      <View style={styles.tokenSelectorOverlay}>
+        <View style={styles.tokenSelector}>
           <View style={styles.tokenSelectorHeader}>
             <Text style={styles.tokenSelectorTitle}>Select Token</Text>
             <TouchableOpacity onPress={() => setShowTokenSelector(false)}>
-              <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />
+              <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
           
-          <Divider style={styles.divider} />
-          
           <ScrollView style={styles.tokenList}>
-            {MOCK_TOKENS.map((token) => (
+            {availableTokens.map((token) => (
               <TouchableOpacity
                 key={token.symbol}
                 style={styles.tokenItem}
-                onPress={() => handleSelectToken(token.symbol)}
+                onPress={() => handleSelectToken(token)}
               >
-                <View style={styles.tokenItemLeft}>
-                  <Image source={token.icon} style={styles.tokenItemIcon} />
-                  <View>
-                    <Text style={styles.tokenItemSymbol}>{token.symbol}</Text>
-                    <Text style={styles.tokenItemName}>{token.name}</Text>
-                  </View>
+                <MaterialCommunityIcons 
+                  name={token.icon} 
+                  size={24} 
+                  color={theme.colors.primary} 
+                />
+                <View style={styles.tokenInfo}>
+                  <Text style={styles.tokenSymbol}>{token.symbol}</Text>
+                  <Text style={styles.tokenName}>{token.name}</Text>
                 </View>
-                <View style={styles.tokenItemRight}>
-                  <Text style={styles.tokenItemBalance}>{token.balance}</Text>
-                  <Text style={styles.tokenItemValue}>${token.price.toFixed(token.price < 0.01 ? 8 : 2)}</Text>
+                <View style={styles.tokenBalance}>
+                  <Text style={styles.tokenBalanceText}>
+                    {formatNumber(token.balance)} {token.symbol}
+                  </Text>
+                  <Text style={styles.tokenPrice}>
+                    ${formatUSD(token.price)}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </Card.Content>
-      </Card>
+        </View>
+      </View>
     );
   };
-  
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
       
-      <Appbar.Header style={styles.header}>
-        <Appbar.BackAction color="#FFFFFF" onPress={() => navigation.goBack()} />
-        <Appbar.Content title="Create Pool" titleStyle={styles.headerTitle} />
-      </Appbar.Header>
-      
-      {showTokenSelector ? (
-        renderTokenSelector()
-      ) : (
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
-          {/* Pool Type Card */}
-          <Card style={styles.formCard}>
-            <Card.Content>
-              <Text style={styles.sectionTitle}>Pool Type</Text>
-              
-              <SegmentedButtons
-                value={poolType}
-                onValueChange={setPoolType}
-                buttons={[
-                  {
-                    value: 'DLMM',
-                    label: 'DLMM',
-                    style: poolType === 'DLMM' ? { backgroundColor: 'rgba(255, 0, 255, 0.2)' } : {},
-                  },
-                  {
-                    value: 'DAMM V2',
-                    label: 'DAMM V2',
-                    style: poolType === 'DAMM V2' ? { backgroundColor: 'rgba(0, 255, 255, 0.2)' } : {},
-                  },
+      <ScrollView style={styles.content}>
+        <Animated.View style={[styles.formContainer, { opacity: fadeAnim }]}>
+          {/* Pool Type Selection */}
+          <NeonCard style={styles.section}>
+            <Text style={styles.sectionTitle}>Pool Type</Text>
+            <View style={styles.poolTypeContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.poolTypeButton,
+                  poolType === 'DLMM' && styles.poolTypeButtonActive
                 ]}
-                style={styles.segmentedButtons}
-              />
+                onPress={() => setPoolType('DLMM')}
+              >
+                <MaterialCommunityIcons 
+                  name="chart-bubble" 
+                  size={24} 
+                  color={getPoolTypeColor('DLMM')} 
+                />
+                <Text style={[
+                  styles.poolTypeText,
+                  { color: getPoolTypeColor('DLMM') }
+                ]}>
+                  DLMM
+                </Text>
+                <Text style={styles.poolTypeDescription}>
+                  Dynamic Liquidity Market Maker
+                </Text>
+              </TouchableOpacity>
               
-              <Text style={styles.poolTypeDescription}>
-                {poolType === 'DLMM' 
-                  ? 'Dynamic Liquidity Market Maker: Concentrated liquidity with customizable price ranges and bin sizes.'
-                  : 'Dynamic Automated Market Maker V2: Single or paired liquidity with dynamic fee structures.'}
-              </Text>
-            </Card.Content>
-          </Card>
-          
-          {/* Token Selection Card */}
-          <Card style={styles.formCard}>
-            <Card.Content>
-              <Text style={styles.sectionTitle}>Select Tokens</Text>
-              
-              <View style={styles.tokenSelectionContainer}>
-                <TouchableOpacity
-                  style={styles.tokenSelector}
-                  onPress={() => openTokenSelector(1)}
-                >
+              <TouchableOpacity
+                style={[
+                  styles.poolTypeButton,
+                  poolType === 'DAMM V2' && styles.poolTypeButtonActive
+                ]}
+                onPress={() => setPoolType('DAMM V2')}
+              >
+                <MaterialCommunityIcons 
+                  name="chart-line" 
+                  size={24} 
+                  color={getPoolTypeColor('DAMM V2')} 
+                />
+                <Text style={[
+                  styles.poolTypeText,
+                  { color: getPoolTypeColor('DAMM V2') }
+                ]}>
+                  DAMM V2
+                </Text>
+                <Text style={styles.poolTypeDescription}>
+                  Dynamic AMM with advanced features
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </NeonCard>
+
+          {/* Token Selection */}
+          <NeonCard style={styles.section}>
+            <Text style={styles.sectionTitle}>Token Pair</Text>
+            <View style={styles.tokenSelectionContainer}>
+              <TouchableOpacity
+                style={styles.tokenSelector}
+                onPress={() => openTokenSelector(1)}
+              >
+                <View style={styles.tokenDisplay}>
                   {token1 ? (
-                    <View style={styles.selectedToken}>
-                      <Image 
-                        source={MOCK_TOKENS.find(t => t.symbol === token1)?.icon} 
-                        style={styles.selectedTokenIcon} 
+                    <>
+                      <MaterialCommunityIcons 
+                        name={token1.icon} 
+                        size={24} 
+                        color={theme.colors.primary} 
                       />
-                      <Text style={styles.selectedTokenSymbol}>{token1}</Text>
-                    </View>
+                      <Text style={styles.tokenSymbol}>{token1.symbol}</Text>
+                    </>
                   ) : (
-                    <Text style={styles.tokenSelectorText}>Select Token 1</Text>
-                  )}
-                  <MaterialCommunityIcons name="chevron-down" size={24} color="#AAAAAA" />
-                </TouchableOpacity>
-                
-                <MaterialCommunityIcons name="plus" size={24} color="#AAAAAA" style={styles.tokenSeparator} />
-                
-                <TouchableOpacity
-                  style={styles.tokenSelector}
-                  onPress={() => openTokenSelector(2)}
-                >
-                  {token2 ? (
-                    <View style={styles.selectedToken}>
-                      <Image 
-                        source={MOCK_TOKENS.find(t => t.symbol === token2)?.icon} 
-                        style={styles.selectedTokenIcon} 
+                    <>
+                      <MaterialCommunityIcons 
+                        name="plus" 
+                        size={24} 
+                        color={theme.colors.textSecondary} 
                       />
-                      <Text style={styles.selectedTokenSymbol}>{token2}</Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.tokenSelectorText}>Select Token 2</Text>
+                      <Text style={styles.tokenPlaceholder}>Select Token</Text>
+                    </>
                   )}
-                  <MaterialCommunityIcons name="chevron-down" size={24} color="#AAAAAA" />
-                </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+              
+              <View style={styles.tokenDivider}>
+                <MaterialCommunityIcons 
+                  name="arrow-right" 
+                  size={20} 
+                  color={theme.colors.textSecondary} 
+                />
               </View>
-            </Card.Content>
-          </Card>
-          
-          {/* Initial Liquidity Card */}
-          {token1 && token2 && (
-            <Card style={styles.formCard}>
-              <Card.Content>
-                <Text style={styles.sectionTitle}>Initial Liquidity</Text>
-                
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>{token1} Amount</Text>
-                  <View style={styles.inputWrapper}>
-                    <TextInput
-                      style={styles.input}
-                      value={token1Amount}
-                      onChangeText={setToken1Amount}
-                      keyboardType="numeric"
-                      placeholder={`Enter ${token1} amount`}
-                      placeholderTextColor="#777777"
-                      mode="outlined"
-                      outlineColor="#2C2C2C"
-                      activeOutlineColor={theme.colors.primary}
-                      right={
-                        <TextInput.Affix
-                          text={token1}
-                          textStyle={{ color: '#AAAAAA' }}
-                        />
-                      }
-                    />
-                    <TouchableOpacity
-                      style={styles.maxButton}
-                      onPress={() => {
-                        const token = MOCK_TOKENS.find(t => t.symbol === token1);
-                        if (token) {
-                          setToken1Amount(token.balance.toString());
-                        }
-                      }}
-                    >
-                      <Text style={styles.maxButtonText}>MAX</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.balanceText}>
-                    Balance: {MOCK_TOKENS.find(t => t.symbol === token1)?.balance} {token1}
-                  </Text>
+              
+              <TouchableOpacity
+                style={styles.tokenSelector}
+                onPress={() => openTokenSelector(2)}
+              >
+                <View style={styles.tokenDisplay}>
+                  {token2 ? (
+                    <>
+                      <MaterialCommunityIcons 
+                        name={token2.icon} 
+                        size={24} 
+                        color={theme.colors.secondary} 
+                      />
+                      <Text style={styles.tokenSymbol}>{token2.symbol}</Text>
+                    </>
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons 
+                        name="plus" 
+                        size={24} 
+                        color={theme.colors.textSecondary} 
+                      />
+                      <Text style={styles.tokenPlaceholder}>Select Token</Text>
+                    </>
+                  )}
                 </View>
-                
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>{token2} Amount</Text>
-                  <View style={styles.inputWrapper}>
-                    <TextInput
-                      style={styles.input}
-                      value={token2Amount}
-                      onChangeText={setToken2Amount}
-                      keyboardType="numeric"
-                      placeholder={`Enter ${token2} amount`}
-                      placeholderTextColor="#777777"
-                      mode="outlined"
-                      outlineColor="#2C2C2C"
-                      activeOutlineColor={theme.colors.primary}
-                      right={
-                        <TextInput.Affix
-                          text={token2}
-                          textStyle={{ color: '#AAAAAA' }}
-                        />
-                      }
-                    />
-                    <TouchableOpacity
-                      style={styles.maxButton}
-                      onPress={() => {
-                        const token = MOCK_TOKENS.find(t => t.symbol === token2);
-                        if (token) {
-                          setToken2Amount(token.balance.toString());
-                        }
-                      }}
-                    >
-                      <Text style={styles.maxButtonText}>MAX</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.balanceText}>
-                    Balance: {MOCK_TOKENS.find(t => t.symbol === token2)?.balance} {token2}
-                  </Text>
+              </TouchableOpacity>
+            </View>
+          </NeonCard>
+
+          {/* Safety Check */}
+          {safetyCheck && (
+            <NeonCard 
+              style={styles.section}
+              variant={safetyCheck.safe ? 'success' : 'warning'}
+            >
+              <View style={styles.safetyHeader}>
+                <MaterialCommunityIcons 
+                  name={safetyCheck.safe ? "shield-check" : "shield-alert"} 
+                  size={24} 
+                  color={safetyCheck.safe ? theme.colors.success : theme.colors.warning} 
+                />
+                <Text style={styles.safetyTitle}>
+                  Safety Score: {safetyCheck.score}/100
+                </Text>
+              </View>
+              {safetyCheck.warnings.length > 0 && (
+                <View style={styles.warningsContainer}>
+                  {safetyCheck.warnings.map((warning, index) => (
+                    <Text key={index} style={styles.warningText}>• {warning}</Text>
+                  ))}
                 </View>
-              </Card.Content>
-            </Card>
+              )}
+            </NeonCard>
           )}
-          
-          {/* DLMM Settings Card */}
-          {token1 && token2 && poolType === 'DLMM' && (
-            <Card style={styles.formCard}>
-              <Card.Content>
-                <Text style={styles.sectionTitle}>DLMM Settings</Text>
-                
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Min Price ({token2}/{token1})</Text>
+
+          {/* Token Amounts */}
+          <NeonCard style={styles.section}>
+            <Text style={styles.sectionTitle}>Initial Liquidity</Text>
+            <View style={styles.amountContainer}>
+              <View style={styles.amountInput}>
+                <Text style={styles.amountLabel}>{token1?.symbol || 'Token 1'}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="0.0"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={token1Amount}
+                  onChangeText={setToken1Amount}
+                  keyboardType="numeric"
+                />
+                {token1 && (
+                  <Text style={styles.balanceText}>
+                    Balance: {formatNumber(token1.balance)} {token1.symbol}
+                  </Text>
+                )}
+              </View>
+              
+              <View style={styles.amountInput}>
+                <Text style={styles.amountLabel}>{token2?.symbol || 'Token 2'}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="0.0"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={token2Amount}
+                  onChangeText={setToken2Amount}
+                  keyboardType="numeric"
+                />
+                {token2 && (
+                  <Text style={styles.balanceText}>
+                    Balance: {formatNumber(token2.balance)} {token2.symbol}
+                  </Text>
+                )}
+              </View>
+            </View>
+          </NeonCard>
+
+          {/* Pool Configuration */}
+          <NeonCard style={styles.section}>
+            <Text style={styles.sectionTitle}>Pool Configuration</Text>
+            
+            {/* Fee Configuration */}
+            <View style={styles.configItem}>
+              <Text style={styles.configLabel}>Fee Type</Text>
+              <View style={styles.feeTypeContainer}>
+                {['fixed', 'linear', 'exponential'].map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.feeTypeButton,
+                      feeType === type && styles.feeTypeButtonActive
+                    ]}
+                    onPress={() => setFeeType(type)}
+                  >
+                    <Text style={[
+                      styles.feeTypeText,
+                      feeType === type && styles.feeTypeTextActive
+                    ]}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            {/* Fee Rate */}
+            <View style={styles.configItem}>
+              <Text style={styles.configLabel}>Fee Rate (%)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0.3"
+                placeholderTextColor={theme.colors.textSecondary}
+                value={fixedFee}
+                onChangeText={setFixedFee}
+                keyboardType="numeric"
+              />
+            </View>
+            
+            {/* DLMM Specific Settings */}
+            {poolType === 'DLMM' && (
+              <>
+                <View style={styles.configItem}>
+                  <Text style={styles.configLabel}>Min Price</Text>
                   <TextInput
                     style={styles.input}
+                    placeholder="0.0"
+                    placeholderTextColor={theme.colors.textSecondary}
                     value={minPrice}
                     onChangeText={setMinPrice}
                     keyboardType="numeric"
-                    placeholder="Enter min price"
-                    placeholderTextColor="#777777"
-                    mode="outlined"
-                    outlineColor="#2C2C2C"
-                    activeOutlineColor={theme.colors.primary}
                   />
                 </View>
                 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Max Price ({token2}/{token1})</Text>
+                <View style={styles.configItem}>
+                  <Text style={styles.configLabel}>Max Price</Text>
                   <TextInput
                     style={styles.input}
+                    placeholder="0.0"
+                    placeholderTextColor={theme.colors.textSecondary}
                     value={maxPrice}
                     onChangeText={setMaxPrice}
                     keyboardType="numeric"
-                    placeholder="Enter max price"
-                    placeholderTextColor="#777777"
-                    mode="outlined"
-                    outlineColor="#2C2C2C"
-                    activeOutlineColor={theme.colors.primary}
                   />
                 </View>
                 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Bin Size (%)</Text>
+                <View style={styles.configItem}>
+                  <Text style={styles.configLabel}>Bin Size (%)</Text>
                   <TextInput
                     style={styles.input}
+                    placeholder="10"
+                    placeholderTextColor={theme.colors.textSecondary}
                     value={binSize}
                     onChangeText={setBinSize}
                     keyboardType="numeric"
-                    placeholder="Enter bin size percentage"
-                    placeholderTextColor="#777777"
-                    mode="outlined"
-                    outlineColor="#2C2C2C"
-                    activeOutlineColor={theme.colors.primary}
-                    right={
-                      <TextInput.Affix
-                        text="%"
-                        textStyle={{ color: '#AAAAAA' }}
-                      />
-                    }
                   />
-                  <Text style={styles.helperText}>
-                    Smaller bin sizes provide more precise pricing but may reduce liquidity per bin.
-                  </Text>
                 </View>
-              </Card.Content>
-            </Card>
-          )}
-          
-          {/* Fee Settings Card */}
-          {token1 && token2 && (
-            <Card style={styles.formCard}>
-              <Card.Content>
-                <Text style={styles.sectionTitle}>Fee Settings</Text>
-                
-                <View style={styles.feeTypeContainer}>
-                  <RadioButton.Group onValueChange={value => setFeeType(value)} value={feeType}>
-                    <View style={styles.radioOption}>
-                      <RadioButton 
-                        value="fixed" 
-                        color={theme.colors.primary}
-                        uncheckedColor="#AAAAAA"
-                      />
-                      <Text style={styles.radioLabel}>Fixed Fee</Text>
-                    </View>
-                    
-                    {poolType === 'DAMM V2' && (
-                      <>
-                        <View style={styles.radioOption}>
-                          <RadioButton 
-                            value="linear" 
-                            color={theme.colors.primary}
-                            uncheckedColor="#AAAAAA"
-                          />
-                          <Text style={styles.radioLabel}>Linear Fee Scheduler</Text>
-                        </View>
-                        
-                        <View style={styles.radioOption}>
-                          <RadioButton 
-                            value="exponential" 
-                            color={theme.colors.primary}
-                            uncheckedColor="#AAAAAA"
-                          />
-                          <Text style={styles.radioLabel}>Exponential Fee Scheduler</Text>
-                        </View>
-                      </>
-                    )}
-                  </RadioButton.Group>
-                </View>
-                
-                {feeType === 'fixed' && (
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Fee Percentage</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={fixedFee}
-                      onChangeText={setFixedFee}
-                      keyboardType="numeric"
-                      placeholder="Enter fee percentage"
-                      placeholderTextColor="#777777"
-                      mode="outlined"
-                      outlineColor="#2C2C2C"
-                      activeOutlineColor={theme.colors.primary}
-                      right={
-                        <TextInput.Affix
-                          text="%"
-                          textStyle={{ color: '#AAAAAA' }}
-                        />
-                      }
-                    />
-                    <Text style={styles.helperText}>
-                      Recommended: 0.3% for stable pairs, 0.5% for volatile pairs
-                    </Text>
-                  </View>
-                )}
-                
-                {feeType === 'linear' && (
-                  <View style={styles.feeSchedulerInfo}>
-                    <Text style={styles.feeSchedulerText}>
-                      Linear fee scheduler adjusts fees based on volatility, starting at 0.1% and increasing linearly up to 1% during high volatility.
-                    </Text>
-                  </View>
-                )}
-                
-                {feeType === 'exponential' && (
-                  <View style={styles.feeSchedulerInfo}>
-                    <Text style={styles.feeSchedulerText}>
-                      Exponential fee scheduler increases fees exponentially during high volatility, starting at 0.1% and potentially reaching up to 2% during extreme market conditions.
-                    </Text>
-                  </View>
-                )}
-              </Card.Content>
-            </Card>
-          )}
-          
+              </>
+            )}
+          </NeonCard>
+
           {/* Submit Button */}
-          {token1 && token2 && (
-            <Button
-              mode="contained"
-              style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
-              labelStyle={{ color: '#000000', fontSize: 16 }}
+          <View style={styles.submitContainer}>
+            <NeonButton
+              title={submitting ? "Creating Pool..." : "Create Pool"}
               onPress={handleSubmit}
-              loading={submitting}
-              disabled={submitting}
-            >
-              Create Pool
-            </Button>
-          )}
-        </ScrollView>
-      )}
+              disabled={submitting || !connected}
+              variant="primary"
+              style={styles.submitButton}
+            />
+            
+            {!connected && (
+              <Text style={styles.connectWarning}>
+                Connect your wallet to create a pool
+              </Text>
+            )}
+          </View>
+        </Animated.View>
+      </ScrollView>
+      
+      {renderTokenSelector()}
     </View>
   );
 };
@@ -605,42 +546,51 @@ const CreatePoolScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: theme.colors.background,
   },
-  header: {
-    backgroundColor: '#1A1A1A',
-    elevation: 0,
-  },
-  headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  scrollView: {
+  content: {
     flex: 1,
   },
-  contentContainer: {
+  formContainer: {
     padding: 16,
-    paddingBottom: 30,
   },
-  formCard: {
-    backgroundColor: '#1E1E1E',
-    borderRadius: 16,
+  section: {
     marginBottom: 16,
   },
   sectionTitle: {
-    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    color: theme.colors.text,
     marginBottom: 16,
   },
-  segmentedButtons: {
-    marginBottom: 16,
+  poolTypeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  poolTypeButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    marginHorizontal: 4,
+  },
+  poolTypeButtonActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '20',
+  },
+  poolTypeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 8,
+    marginBottom: 4,
   },
   poolTypeDescription: {
-    color: '#AAAAAA',
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
   tokenSelectionContainer: {
     flexDirection: 'row',
@@ -649,112 +599,141 @@ const styles = StyleSheet.create({
   },
   tokenSelector: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#2C2C2C',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#3C3C3C',
+    borderColor: theme.colors.outline,
+    padding: 16,
   },
-  tokenSelectorText: {
-    color: '#AAAAAA',
-    fontSize: 16,
-  },
-  selectedToken: {
+  tokenDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  selectedTokenIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginRight: 8,
-  },
-  selectedTokenSymbol: {
-    color: '#FFFFFF',
+  tokenSymbol: {
     fontSize: 16,
-    fontWeight: '500',
-  },
-  tokenSeparator: {
-    marginHorizontal: 10,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    color: '#AAAAAA',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#1E1E1E',
-    color: '#FFFFFF',
-    height: 50,
-  },
-  maxButton: {
-    position: 'absolute',
-    right: 60,
-    backgroundColor: 'rgba(0, 255, 159, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  maxButtonText: {
-    color: '#00FF9F',
-    fontSize: 12,
     fontWeight: 'bold',
-  },
-  balanceText: {
-    color: '#AAAAAA',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  helperText: {
-    color: '#AAAAAA',
-    fontSize: 12,
-    marginTop: 4,
-    fontStyle: 'italic',
-  },
-  feeTypeContainer: {
-    marginBottom: 16,
-  },
-  radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  radioLabel: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: theme.colors.text,
     marginLeft: 8,
   },
-  feeSchedulerInfo: {
-    backgroundColor: '#2C2C2C',
-    padding: 12,
-    borderRadius: 8,
+  tokenPlaceholder: {
+    fontSize: 16,
+    color: theme.colors.textSecondary,
+    marginLeft: 8,
   },
-  feeSchedulerText: {
-    color: '#AAAAAA',
+  tokenDivider: {
+    marginHorizontal: 16,
+  },
+  safetyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  safetyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginLeft: 8,
+  },
+  warningsContainer: {
+    marginTop: 8,
+  },
+  warningText: {
     fontSize: 14,
-    lineHeight: 20,
+    color: theme.colors.warning,
+    marginBottom: 4,
+  },
+  amountContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  amountInput: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  amountLabel: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: theme.colors.text,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  balanceText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 4,
+  },
+  configItem: {
+    marginBottom: 16,
+  },
+  configLabel: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+  },
+  feeTypeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  feeTypeButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    marginHorizontal: 2,
+    alignItems: 'center',
+  },
+  feeTypeButtonActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '20',
+  },
+  feeTypeText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  feeTypeTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  submitContainer: {
+    marginTop: 24,
   },
   submitButton: {
-    marginBottom: 20,
-    paddingVertical: 8,
+    marginBottom: 12,
   },
-  tokenSelectorCard: {
-    backgroundColor: '#1E1E1E',
+  connectWarning: {
+    fontSize: 14,
+    color: theme.colors.warning,
+    textAlign: 'center',
+  },
+  tokenSelectorOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  tokenSelector: {
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
-    margin: 16,
-    flex: 1,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
   },
   tokenSelectorHeader: {
     flexDirection: 'row',
@@ -763,54 +742,44 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tokenSelectorTitle: {
-    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  divider: {
-    backgroundColor: '#2C2C2C',
-    marginBottom: 16,
+    color: theme.colors.text,
   },
   tokenList: {
-    maxHeight: '85%',
+    maxHeight: 400,
   },
   tokenItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#2C2C2C',
+    borderBottomColor: theme.colors.outline,
   },
-  tokenItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  tokenInfo: {
+    flex: 1,
+    marginLeft: 12,
   },
-  tokenItemIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 12,
-  },
-  tokenItemSymbol: {
-    color: '#FFFFFF',
+  tokenSymbol: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    color: theme.colors.text,
   },
-  tokenItemName: {
-    color: '#AAAAAA',
+  tokenName: {
     fontSize: 14,
+    color: theme.colors.textSecondary,
   },
-  tokenItemRight: {
+  tokenBalance: {
     alignItems: 'flex-end',
   },
-  tokenItemBalance: {
-    color: '#FFFFFF',
-    fontSize: 16,
-  },
-  tokenItemValue: {
-    color: '#AAAAAA',
+  tokenBalanceText: {
     fontSize: 14,
+    color: theme.colors.text,
+  },
+  tokenPrice: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
   },
 });
 

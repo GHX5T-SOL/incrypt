@@ -6,6 +6,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// OTA Updates
+import { useOTAUpdates } from './src/hooks/useOTAUpdates';
+
 // Mobile Wallet Adapter
 import { AppIdentity, transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { MobileWalletAdapterProvider } from './src/contexts/MobileWalletAdapterProvider';
@@ -22,13 +25,16 @@ import { WalletProvider } from './src/contexts/WalletProvider';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 
 const APP_IDENTITY = {
-  name: 'Solana Meteora Mobile',
-  uri: 'https://solanameteora.app',
-  icon: 'https://solanameteora.app/icon.png', // Replace with your app icon URL
+  name: 'Incrypt',
+  uri: 'https://incrypt.network',
+  icon: 'https://incrypt.network/icon.png', // Replace with your app icon URL
 };
 
 export default function App() {
   const [isFirstLaunch, setIsFirstLaunch] = useState(null);
+  
+  // Initialize OTA updates
+  const { checkForUpdates } = useOTAUpdates();
 
   useEffect(() => {
     // Check if it's the first launch
@@ -40,7 +46,10 @@ export default function App() {
         setIsFirstLaunch(false);
       }
     });
-  }, []);
+    
+    // Check for OTA updates on app start
+    checkForUpdates();
+  }, [checkForUpdates]);
 
   // Custom navigation theme
   const navigationTheme = {
