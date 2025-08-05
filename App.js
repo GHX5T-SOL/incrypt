@@ -1,11 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
+
+// Theme
+import { theme } from './src/theme';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -90,20 +96,41 @@ export default function App() {
     return null;
   }
 
+  // Custom navigation theme
+  const navigationTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: theme.colors.background,
+      card: theme.colors.surface,
+      text: theme.colors.text,
+      border: theme.colors.outline,
+      primary: theme.colors.primary,
+    },
+  };
+
   return (
     <ErrorBoundary>
-      <View 
-        style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}
-        onLayout={onLayoutRootView}
-      >
-        <Text style={{ color: '#fff', fontSize: 24, marginBottom: 20 }}>
-          Incrypt Test
-        </Text>
-        <Text style={{ color: '#fff', fontSize: 16 }}>
-          App is working! First launch: {isFirstLaunch ? 'Yes' : 'No'}
-        </Text>
-        <StatusBar style="light" />
-      </View>
+      <SafeAreaProvider onLayout={onLayoutRootView}>
+        <PaperProvider theme={theme}>
+          <NavigationContainer theme={navigationTheme}>
+            <View 
+              style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Text style={{ color: '#fff', fontSize: 24, marginBottom: 20 }}>
+                Incrypt Test - Navigation Added
+              </Text>
+              <Text style={{ color: '#fff', fontSize: 16 }}>
+                App is working! First launch: {isFirstLaunch ? 'Yes' : 'No'}
+              </Text>
+              <Text style={{ color: '#fff', fontSize: 14, marginTop: 10 }}>
+                Navigation and Theme working
+              </Text>
+            </View>
+          </NavigationContainer>
+          <StatusBar style="light" />
+        </PaperProvider>
+      </SafeAreaProvider>
     </ErrorBoundary>
   );
 }
