@@ -13,11 +13,6 @@ SplashScreen.preventAutoHideAsync();
 // Theme
 import { theme } from './src/theme';
 
-// Wallet Connection
-import { ConnectionProvider } from './src/contexts/ConnectionProvider';
-import { WalletProvider } from './src/contexts/WalletProvider';
-import { MobileWalletAdapterProvider } from './src/contexts/MobileWalletAdapterProvider';
-
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -117,30 +112,24 @@ export default function App() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider onLayout={onLayoutRootView}>
-        <ConnectionProvider endpoint="https://api.mainnet-beta.solana.com">
-          <WalletProvider>
-            <MobileWalletAdapterProvider>
-              <PaperProvider theme={theme}>
-                <NavigationContainer theme={navigationTheme}>
-                  <View 
-                    style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 24, marginBottom: 20 }}>
-                      Incrypt Test - Wallet Added
-                    </Text>
-                    <Text style={{ color: '#fff', fontSize: 16 }}>
-                      App is working! First launch: {isFirstLaunch ? 'Yes' : 'No'}
-                    </Text>
-                    <Text style={{ color: '#fff', fontSize: 14, marginTop: 10 }}>
-                      Navigation, Theme, and Wallet working
-                    </Text>
-                  </View>
-                </NavigationContainer>
-                <StatusBar style="light" />
-              </PaperProvider>
-            </MobileWalletAdapterProvider>
-          </WalletProvider>
-        </ConnectionProvider>
+        <PaperProvider theme={theme}>
+          <NavigationContainer theme={navigationTheme}>
+            <View 
+              style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Text style={{ color: '#fff', fontSize: 24, marginBottom: 20 }}>
+                Incrypt Test - Wallet Removed
+              </Text>
+              <Text style={{ color: '#fff', fontSize: 16 }}>
+                App is working! First launch: {isFirstLaunch ? 'Yes' : 'No'}
+              </Text>
+              <Text style={{ color: '#fff', fontSize: 14, marginTop: 10 }}>
+                Navigation and Theme working (Wallet temporarily removed)
+              </Text>
+            </View>
+          </NavigationContainer>
+          <StatusBar style="light" />
+        </PaperProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );
