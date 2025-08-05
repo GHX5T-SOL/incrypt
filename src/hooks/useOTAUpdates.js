@@ -56,10 +56,10 @@ export const useOTAUpdates = () => {
     }
   };
 
-  // Auto-check for updates on app start
-  useEffect(() => {
-    checkForUpdates();
-  }, []);
+  // Auto-check for updates on app start (disabled to avoid conflicts)
+  // useEffect(() => {
+  //   checkForUpdates();
+  // }, []);
 
   return {
     isChecking,

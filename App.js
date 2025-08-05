@@ -1,51 +1,57 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
-import { Provider as PaperProvider, MD3DarkTheme } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { View, Text, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
-
-// OTA Updates
-import { useOTAUpdates } from './src/hooks/useOTAUpdates';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-// Mobile Wallet Adapter
-import { AppIdentity, transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
-import { MobileWalletAdapterProvider } from './src/contexts/MobileWalletAdapterProvider';
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-// Navigation
-import AppNavigator from './src/navigation/AppNavigator';
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
 
-// Theme
-import { theme } from './src/theme';
+  componentDidCatch(error, errorInfo) {
+    console.error('App Error:', error);
+    console.error('Error Info:', errorInfo);
+    Alert.alert('App Error', 'Something went wrong. Please restart the app.');
+  }
 
-// Connection Provider
-import { ConnectionProvider } from './src/contexts/ConnectionProvider';
-import { WalletProvider } from './src/contexts/WalletProvider';
-import OnboardingScreen from './src/screens/OnboardingScreen';
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+          <Text style={{ color: '#fff', fontSize: 18 }}>Something went wrong</Text>
+          <Text style={{ color: '#fff', fontSize: 14, marginTop: 10 }}>Please restart the app</Text>
+        </View>
+      );
+    }
 
-const APP_IDENTITY = {
-  name: 'Incrypt',
-  uri: 'https://incrypt.network',
-  icon: 'https://incrypt.network/favicon.ico', // Use favicon instead
-};
+    return this.props.children;
+  }
+}
 
 export default function App() {
   const [isFirstLaunch, setIsFirstLaunch] = useState(null);
   const [appIsReady, setAppIsReady] = useState(false);
-  
-  // Initialize OTA updates
-  const { checkForUpdates } = useOTAUpdates();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function prepare() {
       try {
+        console.log('App: Starting initialization...');
+        
         // Check if it's the first launch
         const value = await AsyncStorage.getItem('alreadyLaunched');
+        console.log('App: First launch check completed');
+        
         if (value === null) {
           await AsyncStorage.setItem('alreadyLaunched', 'true');
           setIsFirstLaunch(true);
@@ -53,39 +59,31 @@ export default function App() {
           setIsFirstLaunch(false);
         }
         
-        // Check for OTA updates on app start
-        await checkForUpdates();
-        
         // Add a small delay to ensure everything is loaded
         await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('App: Initialization completed successfully');
       } catch (e) {
-        console.warn('Error during app preparation:', e);
+        console.error('App: Error during initialization:', e);
+        setError(e);
+        Alert.alert('Initialization Error', e.message);
       } finally {
         setAppIsReady(true);
       }
     }
 
     prepare();
-  }, [checkForUpdates]);
+  }, []);
 
   const onLayoutRootView = useCallback(async () => {
     if (appIsReady) {
-      await SplashScreen.hideAsync();
+      try {
+        await SplashScreen.hideAsync();
+        console.log('App: Splash screen hidden');
+      } catch (e) {
+        console.error('App: Error hiding splash screen:', e);
+      }
     }
   }, [appIsReady]);
-
-  // Custom navigation theme
-  const navigationTheme = {
-    ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      background: theme.colors.background,
-      card: theme.colors.surface,
-      text: theme.colors.text,
-      border: theme.colors.outline,
-      primary: theme.colors.primary,
-    },
-  };
 
   // If we haven't determined if it's first launch yet, show nothing
   if (isFirstLaunch === null || !appIsReady) {
@@ -93,24 +91,19 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider onLayout={onLayoutRootView}>
-      <PaperProvider theme={theme}>
-        <MobileWalletAdapterProvider appIdentity={APP_IDENTITY}>
-          <ConnectionProvider endpoint="https://api.mainnet-beta.solana.com">
-            <WalletProvider>
-              <NavigationContainer theme={navigationTheme}>
-                {isFirstLaunch ? (
-                  <OnboardingScreen onDone={() => setIsFirstLaunch(false)} />
-                ) : (
-                  <AppNavigator />
-                )}
-              </NavigationContainer>
-            </WalletProvider>
-          </ConnectionProvider>
-        </MobileWalletAdapterProvider>
+    <ErrorBoundary>
+      <View 
+        style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}
+        onLayout={onLayoutRootView}
+      >
+        <Text style={{ color: '#fff', fontSize: 24, marginBottom: 20 }}>
+          Incrypt Test
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 16 }}>
+          App is working! First launch: {isFirstLaunch ? 'Yes' : 'No'}
+        </Text>
         <StatusBar style="light" />
-        <Toast />
-      </PaperProvider>
-    </SafeAreaProvider>
+      </View>
+    </ErrorBoundary>
   );
 }
