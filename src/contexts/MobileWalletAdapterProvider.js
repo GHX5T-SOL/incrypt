@@ -63,8 +63,33 @@ export function MobileWalletAdapterProvider({ children }) {
         return authorizationResult;
       });
       
+      // Debug: Log the result structure
+      console.log('Authorization result:', JSON.stringify(result, null, 2));
+      console.log('PublicKey type:', typeof result.publicKey);
+      console.log('PublicKey value:', result.publicKey);
+      
+      // Handle different publicKey formats
+      let publicKey;
+      try {
+        if (typeof result.publicKey === 'string') {
+          publicKey = new PublicKey(result.publicKey);
+        } else if (result.publicKey && result.publicKey.toBytes) {
+          // If it's already a PublicKey object
+          publicKey = result.publicKey;
+        } else if (result.publicKey && result.publicKey._bn) {
+          // If it has the _bn property, it might be a PublicKey-like object
+          publicKey = new PublicKey(result.publicKey._bn);
+        } else {
+          throw new Error('Invalid publicKey format');
+        }
+      } catch (publicKeyError) {
+        console.error('Error creating PublicKey:', publicKeyError);
+        console.log('Received publicKey:', result.publicKey);
+        throw new Error('Failed to process wallet public key');
+      }
+      
       setAuthorizedWallet({
-        publicKey: new PublicKey(result.publicKey),
+        publicKey: publicKey,
         authToken: result.authToken,
         label: result.walletUriBase || 'Mobile Wallet',
       });
