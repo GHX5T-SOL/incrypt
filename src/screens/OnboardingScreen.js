@@ -76,15 +76,25 @@ const OnboardingScreen = ({ onDone }) => {
         animated: true,
       });
     } else {
+      // If we're on the last slide, go to main app
       handleGetStarted();
     }
   };
 
   const handleGetStarted = () => {
+    console.log('handleGetStarted called - navigating to Dashboard');
     if (onDone) {
       onDone();
     }
-    navigation.navigate('ConnectWallet');
+    // Navigate directly to Dashboard instead of ConnectWallet for demo
+    navigation.replace('Dashboard');
+  };
+
+  // Handle manual scroll to update currentIndex
+  const handleScroll = (event) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const index = Math.round(contentOffset / width);
+    setCurrentIndex(index);
   };
 
   return (
@@ -103,6 +113,7 @@ const OnboardingScreen = ({ onDone }) => {
             { useNativeDriver: false }
           )}
           onMomentumScrollEnd={viewableItemsChanged}
+          onScrollEndDrag={handleScroll}
           scrollEventThrottle={32}
           viewabilityConfig={viewConfig}
         >
@@ -163,21 +174,31 @@ const OnboardingScreen = ({ onDone }) => {
         </View>
 
         <View style={styles.buttonContainer}>
-          {currentIndex < slides.length - 1 ? (
-            <NeonButton
-              title="Next"
-              onPress={scrollTo}
-              variant="primary"
-              style={styles.nextButton}
-            />
-          ) : (
-            <NeonButton
-              title="Get Started"
-              onPress={handleGetStarted}
-              variant="primary"
-              style={styles.getStartedButton}
-            />
-          )}
+          <View style={styles.buttonRow}>
+            {currentIndex < slides.length - 1 ? (
+              <>
+                <NeonButton
+                  title="Skip"
+                  onPress={handleGetStarted}
+                  variant="secondary"
+                  style={styles.skipButton}
+                />
+                <NeonButton
+                  title="Next"
+                  onPress={scrollTo}
+                  variant="primary"
+                  style={styles.nextButton}
+                />
+              </>
+            ) : (
+              <NeonButton
+                title="Get Started"
+                onPress={handleGetStarted}
+                variant="primary"
+                style={styles.getStartedButton}
+              />
+            )}
+          </View>
         </View>
       </View>
     </View>
@@ -258,6 +279,15 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     alignItems: 'center',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  skipButton: {
+    width: 100,
   },
   nextButton: {
     width: 200,
