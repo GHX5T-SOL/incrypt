@@ -194,18 +194,11 @@ const TabNavigator = () => {
 
 // Root navigator
 const AppNavigator = () => {
-  const { connected } = useWallet();
-
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!connected ? (
-        <>
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-          <Stack.Screen name="ConnectWallet" component={ConnectWalletScreen} />
-        </>
-      ) : (
-        <Stack.Screen name="MainApp" component={TabNavigator} />
-      )}
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="ConnectWallet" component={ConnectWalletScreen} />
+      <Stack.Screen name="MainApp" component={TabNavigator} />
     </Stack.Navigator>
   );
 };

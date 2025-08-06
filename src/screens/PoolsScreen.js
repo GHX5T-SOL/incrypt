@@ -23,9 +23,33 @@ import { formatUSD, formatPercentage, formatNumber, getSafetyColor, formatSafety
 const { width } = Dimensions.get('window');
 
 const PoolsScreen = () => {
-  const navigation = useNavigation();
-  const { connected } = useWallet();
-  const { pools, loading, fetchPools } = useMeteora();
+  let navigation;
+  try {
+    navigation = useNavigation();
+  } catch (error) {
+    console.log('Navigation not available in PoolsScreen, using fallback');
+    navigation = {
+      navigate: () => console.log('Navigation not available'),
+      goBack: () => console.log('Navigation not available'),
+    };
+  }
+  
+  let walletData = { connected: false };
+  try {
+    walletData = useWallet();
+  } catch (error) {
+    console.log('Wallet hook not available in PoolsScreen, using fallback');
+  }
+  
+  let meteoraData = { pools: [], loading: false, fetchPools: () => {} };
+  try {
+    meteoraData = useMeteora();
+  } catch (error) {
+    console.log('Meteora hook not available in PoolsScreen, using fallback');
+  }
+  
+  const { connected } = walletData;
+  const { pools, loading, fetchPools } = meteoraData;
   
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

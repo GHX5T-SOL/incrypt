@@ -19,9 +19,33 @@ import NeonButton from '../components/NeonButton';
 import { formatUSD, formatPercentage, formatNumber } from '../utils/format';
 
 const LendingStrategiesScreen = () => {
-  const navigation = useNavigation();
-  const { connected, balance } = useWallet();
-  const { userPositions, getHealthFactor, getNetAPY } = useLending();
+  let navigation;
+  try {
+    navigation = useNavigation();
+  } catch (error) {
+    console.log('Navigation not available in LendingStrategiesScreen, using fallback');
+    navigation = {
+      navigate: () => console.log('Navigation not available'),
+      goBack: () => console.log('Navigation not available'),
+    };
+  }
+  
+  let walletData = { connected: false, balance: 0 };
+  try {
+    walletData = useWallet();
+  } catch (error) {
+    console.log('Wallet hook not available in LendingStrategiesScreen, using fallback');
+  }
+  
+  let lendingData = { userPositions: [], getHealthFactor: () => 0, getNetAPY: () => 0 };
+  try {
+    lendingData = useLending();
+  } catch (error) {
+    console.log('Lending hook not available in LendingStrategiesScreen, using fallback');
+  }
+  
+  const { connected, balance } = walletData;
+  const { userPositions, getHealthFactor, getNetAPY } = lendingData;
   
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [fadeAnim] = useState(new Animated.Value(0));

@@ -215,15 +215,25 @@ const DashboardScreen = () => {
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>
-            {connected ? 'Welcome back!' : 'Welcome to Incrypt!'}
-          </Text>
-          <Text style={styles.welcomeSubtitle}>
-            {connected 
-              ? `${getShortAddress()} • ${formatSOL(balance * 1e9)} SOL`
-              : 'Connect your wallet to start earning'
-            }
-          </Text>
+          <View style={styles.welcomeHeader}>
+            <MaterialCommunityIcons 
+              name={connected ? "wallet" : "wallet-outline"} 
+              size={32} 
+              color={connected ? theme.colors.success : theme.colors.primary} 
+              style={styles.welcomeIcon}
+            />
+            <View style={styles.welcomeTextContainer}>
+              <Text style={styles.welcomeTitle}>
+                {connected ? 'Welcome back!' : 'Welcome to Incrypt!'}
+              </Text>
+              <Text style={styles.welcomeSubtitle}>
+                {connected 
+                  ? `${getShortAddress()} • ${formatSOL(balance * 1e9)} SOL`
+                  : 'Connect your wallet to start earning 💰'
+                }
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Quick Stats */}
@@ -261,7 +271,9 @@ const DashboardScreen = () => {
 
         {/* Quick Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Quick Actions</Text>
+          </View>
           <View style={styles.actionsGrid}>
             <TouchableOpacity style={styles.actionButton} onPress={navigateToPools}>
               <MaterialCommunityIcons 
@@ -303,7 +315,7 @@ const DashboardScreen = () => {
               <MaterialCommunityIcons 
                 name="shield-check" 
                 size={32} 
-                color={theme.colors.neonGreen} 
+                color={theme.colors.accent} 
               />
               <Text style={styles.actionText}>Token Safety</Text>
             </TouchableOpacity>
@@ -464,6 +476,17 @@ const styles = StyleSheet.create({
   welcomeSection: {
     marginBottom: 24,
   },
+  welcomeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  welcomeIcon: {
+    marginRight: 12,
+  },
+  welcomeTextContainer: {
+    flex: 1,
+  },
   welcomeTitle: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -501,10 +524,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
