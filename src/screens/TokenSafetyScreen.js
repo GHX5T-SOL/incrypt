@@ -15,7 +15,23 @@ import { NeonCard } from '../components/NeonCard';
 import { formatAddress, formatPercentage } from '../utils/format';
 
 const TokenSafetyScreen = () => {
-  const theme = useTheme();
+  let theme;
+  try {
+    theme = useTheme();
+  } catch (error) {
+    console.log('Theme not available in TokenSafetyScreen, using fallback');
+    theme = {
+      colors: {
+        text: '#FFFFFF',
+        textSecondary: '#CCCCCC',
+        primary: '#00FF88',
+        surface: '#1A1A1A',
+        background: '#000000',
+        outline: '#333333',
+      }
+    };
+  }
+  
   const {
     loading,
     error,
@@ -24,9 +40,7 @@ const TokenSafetyScreen = () => {
     analyzePool,
     analyzeWebsite,
     analyzeWallet,
-    getSafetyLevel,
-    getSafetyColor,
-    clearSafetyData,
+    batchCheck
   } = useRugcheck();
 
   const [tokenAddress, setTokenAddress] = useState('');

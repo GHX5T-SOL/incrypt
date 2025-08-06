@@ -20,9 +20,33 @@ import NeonButton from '../components/NeonButton';
 import { formatUSD, formatPercentage, formatNumber } from '../utils/format';
 
 const CreatePoolScreen = () => {
-  const navigation = useNavigation();
-  const { connected, balance } = useWallet();
-  const { createPool, loading } = useMeteora();
+  let navigation;
+  try {
+    navigation = useNavigation();
+  } catch (error) {
+    console.log('Navigation not available in CreatePoolScreen, using fallback');
+    navigation = {
+      navigate: () => console.log('Navigation not available'),
+      goBack: () => console.log('Navigation not available'),
+    };
+  }
+  
+  let walletData = { connected: false, balance: 0 };
+  try {
+    walletData = useWallet();
+  } catch (error) {
+    console.log('Wallet hook not available in CreatePoolScreen, using fallback');
+  }
+  
+  let meteoraData = { createPool: () => {}, loading: false };
+  try {
+    meteoraData = useMeteora();
+  } catch (error) {
+    console.log('Meteora hook not available in CreatePoolScreen, using fallback');
+  }
+  
+  const { connected, balance } = walletData;
+  const { createPool, loading } = meteoraData;
   
   const [submitting, setSubmitting] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));

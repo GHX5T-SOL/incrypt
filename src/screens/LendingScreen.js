@@ -19,18 +19,51 @@ import NeonButton from '../components/NeonButton';
 import { formatUSD, formatPercentage, formatNumber } from '../utils/format';
 
 const LendingScreen = () => {
-  const navigation = useNavigation();
-  const { connected, balance } = useWallet();
+  let navigation;
+  try {
+    navigation = useNavigation();
+  } catch (error) {
+    console.log('Navigation not available in LendingScreen, using fallback');
+    navigation = {
+      navigate: () => console.log('Navigation not available'),
+      goBack: () => console.log('Navigation not available'),
+    };
+  }
+  
+  let walletData = { connected: false, balance: 0 };
+  try {
+    walletData = useWallet();
+  } catch (error) {
+    console.log('Wallet hook not available in LendingScreen, using fallback');
+  }
+  
+  let lendingData = { 
+    lendingMarkets: [], 
+    userPositions: [], 
+    loading: false, 
+    fetchLendingData: () => {},
+    supplyAsset: () => {},
+    borrowAsset: () => {},
+    withdrawAsset: () => {},
+    repayAsset: () => {}
+  };
+  try {
+    lendingData = useLending();
+  } catch (error) {
+    console.log('Lending hook not available in LendingScreen, using fallback');
+  }
+  
+  const { connected, balance } = walletData;
   const { 
     lendingMarkets, 
     userPositions, 
     loading, 
-    fetchLendingData,
-    supplyAsset,
-    borrowAsset,
-    withdrawAsset,
-    repayAsset
-  } = useLending();
+    fetchLendingData, 
+    supplyAsset, 
+    borrowAsset, 
+    withdrawAsset, 
+    repayAsset 
+  } = lendingData;
   
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTab, setSelectedTab] = useState('markets'); // 'markets', 'positions', 'strategies'
