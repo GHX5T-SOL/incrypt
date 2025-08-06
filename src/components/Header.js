@@ -2,13 +2,11 @@ import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { WalletContext } from '../contexts/WalletProvider';
-import { useWallet } from '../contexts/WalletProvider';
 import { formatAddress } from '../utils/format';
 import { theme } from '../theme';
 
 const Header = ({ title, showWalletButton = true, onWalletPress }) => {
-  const { connected, connecting, getWalletAddress, getShortAddress } = useWallet();
-  const { connect, disconnect } = useContext(WalletContext);
+  const { connected, connecting, connect, disconnect, getShortAddress } = useContext(WalletContext);
 
   const handleWalletPress = () => {
     if (connected) {
@@ -42,8 +40,7 @@ const Header = ({ title, showWalletButton = true, onWalletPress }) => {
     }
 
     if (connected) {
-      const walletAddress = getWalletAddress();
-      const shortAddress = getShortAddress();
+      const walletAddress = getShortAddress();
       
       return (
         <View style={styles.walletButton}>
@@ -53,7 +50,7 @@ const Header = ({ title, showWalletButton = true, onWalletPress }) => {
             color={theme.colors.success} 
           />
           <Text style={[styles.walletText, { color: theme.colors.success }]}>
-            {shortAddress}
+            {walletAddress}
           </Text>
         </View>
       );
