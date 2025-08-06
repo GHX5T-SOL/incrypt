@@ -18,12 +18,12 @@ import {
   ProgressBar,
   Divider,
   ActivityIndicator,
-  useTheme,
+  Chip,
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useWallet } from '../contexts/WalletProvider';
 import { useConnection } from '../contexts/ConnectionProvider';
-import { neonStyles } from '../theme';
+import { theme, neonStyles } from '../theme';
 import { formatNumber, formatPercentage } from '../utils/format';
 import { VictoryPie, VictoryLabel } from 'victory-native';
 
@@ -32,7 +32,6 @@ const METEORA_POINTS_API = 'https://api.meteora.ag/points/';
 
 const MeteoraPointsScreen = () => {
   const navigation = useNavigation();
-  const theme = useTheme();
   const { publicKey, connected } = useWallet();
   const connection = useConnection();
   

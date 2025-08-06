@@ -1,25 +1,30 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
-  Alert
+  Alert,
+  Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from 'react-native-paper';
-import { useWallet } from '../hooks/useWallet';
 import { theme } from '../theme';
-import NeonCard from '../components/NeonCard';
-import NeonButton from '../components/NeonButton';
-import { formatUSD, formatPercentage } from '../utils/format';
+import { useWallet } from '../contexts/WalletProvider';
+import { useLending } from '../hooks/useLending';
+import { formatSOL, formatUSD, formatPercentage } from '../utils/format';
 
-const LendingDetailScreen = ({ route }) => {
-  const { lendingId } = route.params;
-  const themeColors = useTheme();
+const LendingDetailScreen = () => {
   const { connected, balance } = useWallet();
-  const [loading, setLoading] = useState(false);
+  const { 
+    lendingMarkets, 
+    userPositions, 
+    loading, 
+    supplyAsset, 
+    borrowAsset, 
+    withdrawAsset, 
+    repayAsset 
+  } = useLending();
 
   // Mock lending opportunity data
   const lendingOpportunity = {

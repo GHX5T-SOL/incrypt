@@ -1,18 +1,18 @@
-import React, { useState, useRef } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  Image, 
-  Dimensions, 
-  TouchableOpacity, 
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
   Animated,
-  ScrollView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Button, useTheme } from 'react-native-paper';
-import { StatusBar } from 'expo-status-bar';
-import { neonStyles, theme } from '../theme';
+import { Button } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { theme } from '../theme';
+import { neonStyles } from '../theme';
 import NeonButton from '../components/NeonButton';
 
 const { width, height } = Dimensions.get('window');

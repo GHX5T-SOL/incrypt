@@ -1,27 +1,20 @@
-import React from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
-  TouchableOpacity 
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Animated,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from 'react-native-paper';
-import { useWallet } from '../hooks/useWallet';
 import { theme } from '../theme';
-import NeonCard from '../components/NeonCard';
-import { formatSOL, formatUSD } from '../utils/format';
+import { useWallet } from '../contexts/WalletProvider';
+import { formatSOL, formatAddress } from '../utils/format';
 
 const WalletScreen = () => {
-  const themeColors = useTheme();
-  const { 
-    connected, 
-    getWalletAddress, 
-    getShortAddress, 
-    balance,
-    loading 
-  } = useWallet();
+  const { connected, balance, tokenBalances, loading, connect, disconnect } = useWallet();
 
   if (!connected) {
     return (
@@ -40,14 +33,14 @@ const WalletScreen = () => {
         {/* Wallet Overview */}
         <NeonCard variant="success" style={styles.walletCard}>
           <View style={styles.walletHeader}>
-            <MaterialCommunityIcons 
-              name="wallet" 
-              size={32} 
-              color={theme.colors.success} 
+            <MaterialCommunityIcons
+              name="wallet"
+              size={32}
+              color={theme.colors.success}
             />
             <Text style={styles.walletTitle}>Connected Wallet</Text>
           </View>
-          
+
           <View style={styles.balanceContainer}>
             <Text style={styles.balanceLabel}>SOL Balance</Text>
             <Text style={styles.balanceAmount}>
@@ -62,10 +55,10 @@ const WalletScreen = () => {
             <Text style={styles.addressLabel}>Wallet Address</Text>
             <TouchableOpacity style={styles.addressButton}>
               <Text style={styles.addressText}>{shortAddress}</Text>
-              <MaterialCommunityIcons 
-                name="content-copy" 
-                size={16} 
-                color={theme.colors.primary} 
+              <MaterialCommunityIcons
+                name="content-copy"
+                size={16}
+                color={theme.colors.primary}
               />
             </TouchableOpacity>
           </View>
@@ -76,37 +69,37 @@ const WalletScreen = () => {
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionsGrid}>
             <TouchableOpacity style={styles.actionButton}>
-              <MaterialCommunityIcons 
-                name="send" 
-                size={24} 
-                color={theme.colors.primary} 
+              <MaterialCommunityIcons
+                name="send"
+                size={24}
+                color={theme.colors.primary}
               />
               <Text style={styles.actionText}>Send</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.actionButton}>
-              <MaterialCommunityIcons 
-                name="download" 
-                size={24} 
-                color={theme.colors.secondary} 
+              <MaterialCommunityIcons
+                name="download"
+                size={24}
+                color={theme.colors.secondary}
               />
               <Text style={styles.actionText}>Receive</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.actionButton}>
-              <MaterialCommunityIcons 
-                name="swap-horizontal" 
-                size={24} 
-                color={theme.colors.accent} 
+              <MaterialCommunityIcons
+                name="swap-horizontal"
+                size={24}
+                color={theme.colors.accent}
               />
               <Text style={styles.actionText}>Swap</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.actionButton}>
-              <MaterialCommunityIcons 
-                name="chart-line" 
-                size={24} 
-                color={theme.colors.neonBlue} 
+              <MaterialCommunityIcons
+                name="chart-line"
+                size={24}
+                color={theme.colors.neonBlue}
               />
               <Text style={styles.actionText}>Stake</Text>
             </TouchableOpacity>
@@ -129,10 +122,10 @@ const WalletScreen = () => {
           <Text style={styles.sectionTitle}>Network</Text>
           <NeonCard style={styles.networkCard}>
             <View style={styles.networkInfo}>
-              <MaterialCommunityIcons 
-                name="server-network" 
-                size={20} 
-                color={theme.colors.primary} 
+              <MaterialCommunityIcons
+                name="server-network"
+                size={20}
+                color={theme.colors.primary}
               />
               <Text style={styles.networkText}>Solana Mainnet</Text>
             </View>

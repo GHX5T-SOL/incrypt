@@ -12,10 +12,10 @@ import {
   Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Button, useTheme } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { useWallet } from '../hooks/useWallet';
+import { useWallet } from '../contexts/WalletProvider';
 import { useMobileWalletAdapter } from '../contexts/MobileWalletAdapterProvider';
 import { neonStyles, theme } from '../theme';
 import NeonButton from '../components/NeonButton';
@@ -24,7 +24,6 @@ const { width, height } = Dimensions.get('window');
 
 const ConnectWalletScreen = () => {
   const navigation = useNavigation();
-  const themeColors = useTheme();
   const { connect, connected, connecting, error } = useWallet();
   const { isNativeModuleAvailable } = useMobileWalletAdapter();
   const [animation] = useState(new Animated.Value(0));

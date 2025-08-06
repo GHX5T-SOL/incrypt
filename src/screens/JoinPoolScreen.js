@@ -19,12 +19,11 @@ import {
   Switch,
   Divider,
   ActivityIndicator,
-  useTheme,
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useWallet } from '../contexts/WalletProvider';
 import { useConnection } from '../contexts/ConnectionProvider';
-import { neonStyles } from '../theme';
+import { theme, neonStyles } from '../theme';
 import { formatCurrency, formatPercentage, formatNumber } from '../utils/format';
 import Toast from 'react-native-toast-message';
 
@@ -69,7 +68,6 @@ const getMockPoolData = (poolId) => {
 const JoinPoolScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const theme = useTheme();
   const { publicKey, balance, sendTransaction } = useWallet();
   const connection = useConnection();
   

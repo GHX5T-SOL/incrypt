@@ -17,11 +17,10 @@ import {
   Chip,
   Divider,
   ActivityIndicator,
-  useTheme,
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useWallet } from '../contexts/WalletProvider';
-import { neonStyles } from '../theme';
+import { theme, neonStyles } from '../theme';
 import { formatCurrency, formatPercentage, formatNumber } from '../utils/format';
 
 // Mock data for user positions
@@ -108,7 +107,6 @@ const MOCK_POSITIONS = [
 
 const PositionsScreen = () => {
   const navigation = useNavigation();
-  const theme = useTheme();
   const { publicKey, connected } = useWallet();
   
   const [positions, setPositions] = useState([]);

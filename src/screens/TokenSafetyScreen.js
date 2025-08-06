@@ -9,7 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import { useRugcheck } from '../hooks/useRugcheck';
-import { useTheme } from '../theme';
+import { theme } from '../theme';
 import { NeonButton } from '../components/NeonButton';
 import { NeonCard } from '../components/NeonCard';
 import { formatAddress, formatPercentage } from '../utils/format';
@@ -17,7 +17,7 @@ import { formatAddress, formatPercentage } from '../utils/format';
 const TokenSafetyScreen = () => {
   let theme;
   try {
-    theme = useTheme();
+    theme = theme;
   } catch (error) {
     console.log('Theme not available in TokenSafetyScreen, using fallback');
     theme = {
