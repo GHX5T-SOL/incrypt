@@ -201,24 +201,6 @@ const DashboardScreen = () => {
     }
   };
 
-  if (!connected) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.notConnectedContainer}>
-          <MaterialCommunityIcons 
-            name="wallet-outline" 
-            size={64} 
-            color={theme.colors.textSecondary} 
-          />
-          <Text style={styles.notConnectedTitle}>Wallet Not Connected</Text>
-          <Text style={styles.notConnectedSubtitle}>
-            Connect your wallet to view your dashboard
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <ScrollView 
       style={styles.container}
@@ -233,9 +215,14 @@ const DashboardScreen = () => {
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Welcome back!</Text>
+          <Text style={styles.welcomeTitle}>
+            {connected ? 'Welcome back!' : 'Welcome to Incrypt!'}
+          </Text>
           <Text style={styles.welcomeSubtitle}>
-            {getShortAddress()} • {formatSOL(balance * 1e9)} SOL
+            {connected 
+              ? `${getShortAddress()} • ${formatSOL(balance * 1e9)} SOL`
+              : 'Connect your wallet to start earning'
+            }
           </Text>
         </View>
 
@@ -425,7 +412,7 @@ const DashboardScreen = () => {
         </View>
 
         {/* User Stats */}
-        {dashboardData.userPositions > 0 && (
+        {connected && dashboardData.userPositions > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Your Activity</Text>
             <NeonCard variant="success" style={styles.userStatsCard}>
@@ -464,7 +451,7 @@ const styles = StyleSheet.create({
   notConnectedTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: theme.colors.text,
+    color: theme.colors.textSecondary,
     marginTop: 16,
     marginBottom: 8,
   },

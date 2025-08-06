@@ -174,31 +174,15 @@ const OnboardingScreen = ({ onDone }) => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <View style={styles.buttonRow}>
-            {currentIndex < slides.length - 1 ? (
-              <>
-                <NeonButton
-                  title="Skip"
-                  onPress={handleGetStarted}
-                  variant="secondary"
-                  style={styles.skipButton}
-                />
-                <NeonButton
-                  title="Next"
-                  onPress={scrollTo}
-                  variant="primary"
-                  style={styles.nextButton}
-                />
-              </>
-            ) : (
-              <NeonButton
-                title="Get Started"
-                onPress={handleGetStarted}
-                variant="primary"
-                style={styles.getStartedButton}
-              />
-            )}
-          </View>
+          <Text style={styles.swipeInstruction}>
+            Swipe to learn more
+          </Text>
+          <NeonButton
+            title="Get Started"
+            onPress={handleGetStarted}
+            variant="primary"
+            style={styles.getStartedButton}
+          />
         </View>
       </View>
     </View>
@@ -243,9 +227,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
-    textShadowColor: theme.colors.primary,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
   },
   subtitle: {
     fontSize: 18,
@@ -280,20 +261,14 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 20,
-  },
-  skipButton: {
-    width: 100,
-  },
-  nextButton: {
-    width: 200,
-  },
   getStartedButton: {
     width: 200,
+  },
+  swipeInstruction: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 
