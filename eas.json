@@ -9,10 +9,13 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.incrypt.network"
       },
-      "extends": "base",
       "channel": "demo",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "newArchEnabled": false
+      },
+      "ios": {
+        "newArchEnabled": false
       }
     },
     "preview": {
@@ -20,10 +23,13 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.incrypt.network"
       },
-      "extends": "base",
       "channel": "demo",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "newArchEnabled": false
+      },
+      "ios": {
+        "newArchEnabled": false
       }
     },
     "production": {
@@ -31,20 +37,15 @@
         "EXPO_PUBLIC_API_URL": "https://api.incrypt.network"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "newArchEnabled": false
+      },
+      "ios": {
+        "newArchEnabled": false
       }
     }
   },
   "submit": {
     "production": {}
-  },
-  "base": {
-    "android": {
-      "buildType": "apk",
-      "newArchEnabled": false
-    },
-    "ios": {
-      "newArchEnabled": false
-    }
   }
 } 
