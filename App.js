@@ -76,7 +76,7 @@ LogBox.ignoreLogs([
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
-  const { checkForUpdateAsync, fetchUpdateAsync } = useOTAUpdates();
+  const { checkForUpdates } = useOTAUpdates();
 
   useEffect(() => {
     async function prepare() {
@@ -84,8 +84,10 @@ export default function App() {
         // Pre-load fonts, make any API calls you need to do here
         await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate loading time
         
-        // Check for OTA updates
-        await checkForUpdateAsync();
+        // Check for OTA updates (disabled in development)
+        if (!__DEV__) {
+          await checkForUpdates();
+        }
       } catch (e) {
         console.warn(e);
       } finally {

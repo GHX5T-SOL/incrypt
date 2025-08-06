@@ -60,7 +60,11 @@ const OnboardingScreen = ({ onDone }) => {
   const theme = useTheme();
 
   const viewableItemsChanged = useRef(({ viewableItems }) => {
-    setCurrentIndex(viewableItems[0]?.index || 0);
+    if (viewableItems && viewableItems.length > 0 && viewableItems[0]) {
+      setCurrentIndex(viewableItems[0].index || 0);
+    } else {
+      setCurrentIndex(0);
+    }
   }).current;
 
   const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
