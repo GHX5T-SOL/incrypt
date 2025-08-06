@@ -49,9 +49,12 @@ const LendingStrategiesScreen = () => {
   
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [healthFactor, setHealthFactor] = useState(0);
+  const [netAPY, setNetAPY] = useState(0);
 
   useEffect(() => {
     startFadeAnimation();
+    loadUserData();
   }, []);
 
   const startFadeAnimation = () => {
@@ -62,8 +65,23 @@ const LendingStrategiesScreen = () => {
     }).start();
   };
 
-  const healthFactor = getHealthFactor(userPositions);
-  const netAPY = getNetAPY(userPositions);
+  const loadUserData = async () => {
+    try {
+      if (connected && walletData?.wallet?.publicKey) {
+        const walletAddress = walletData.wallet.publicKey.toString();
+        const [health, apy] = await Promise.all([
+          getHealthFactor(walletAddress).catch(() => 0),
+          getNetAPY(walletAddress).catch(() => 0)
+        ]);
+        setHealthFactor(health || 0);
+        setNetAPY(apy || 0);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setHealthFactor(0);
+      setNetAPY(0);
+    }
+  };
 
   const strategies = [
     {
