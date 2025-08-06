@@ -83,12 +83,12 @@ const OnboardingScreen = ({ onDone }) => {
   };
 
   const handleGetStarted = () => {
-    console.log('handleGetStarted called - navigating to Dashboard');
+    console.log('handleGetStarted called - navigating to MainApp');
     if (onDone) {
       onDone();
     }
-    // Navigate directly to Dashboard instead of ConnectWallet for demo
-    navigation.replace('Dashboard');
+    // Navigate to MainApp which contains the tab navigator
+    navigation.replace('MainApp');
   };
 
   // Handle manual scroll to update currentIndex
