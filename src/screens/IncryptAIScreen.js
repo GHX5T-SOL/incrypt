@@ -136,7 +136,7 @@ const IncryptAIScreen = () => {
           </View>
           
           {/* Info Card */}
-          <NeonCard style={styles.infoCard}>
+          <NeonCard style={[styles.infoCard, { marginHorizontal: 0 }]}>
             <Text style={styles.infoTitle}>Your AI DeFi Companion</Text>
             <Text style={styles.infoText}>
               Ask about strategies, build custom yields, analyze risks, and more. 
@@ -255,6 +255,8 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     textAlign: 'center',
+    alignSelf: 'center',
+    maxWidth: '90%',
   },
   infoTitle: {
     fontSize: 16,
