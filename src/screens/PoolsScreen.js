@@ -259,8 +259,9 @@ const PoolsScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderSortButton = (label, value) => (
+  const renderSortButton = (label, value, key) => (
     <TouchableOpacity
+      key={key}
       style={[
         styles.sortButton,
         sortBy === value && styles.sortButtonActive
@@ -345,7 +346,7 @@ const PoolsScreen = () => {
 
         {/* Sort Options */}
         <View style={styles.sortContainer}>
-          {sortOptions.map((option) => renderSortButton(option.label, option.value))}
+          {sortOptions.map((option) => renderSortButton(option.label, option.value, option.value))}
         </View>
       </View>
 

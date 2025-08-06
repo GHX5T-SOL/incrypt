@@ -363,7 +363,7 @@ const SettingsScreen = () => {
             })}
             
             {renderSettingItem({
-              icon: 'price-tag',
+              icon: 'tag',
               title: 'Price Alerts',
               subtitle: 'Get price change notifications',
               type: 'switch',

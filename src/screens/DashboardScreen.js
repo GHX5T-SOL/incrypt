@@ -439,43 +439,6 @@ const DashboardScreen = () => {
           )}
         </Animated.View>
       </ScrollView>
-      
-      {/* Floating Wallet Connect Button */}
-      <TouchableOpacity 
-        style={[
-          styles.floatingWalletButton,
-          connected && styles.floatingWalletButtonConnected
-        ]}
-        onPress={() => {
-          if (connected) {
-            // Show wallet options
-            Alert.alert(
-              'Wallet Connected', 
-              `Address: ${getShortAddress()}\nBalance: ${formatSOL(balance * 1e9)} SOL`,
-              [
-                { text: 'Disconnect', onPress: () => disconnect(), style: 'destructive' },
-                { text: 'Cancel', style: 'cancel' }
-              ]
-            );
-          } else {
-            // Connect wallet
-            connect();
-          }
-        }}
-        activeOpacity={0.8}
-      >
-        <MaterialCommunityIcons 
-          name={connected ? "wallet" : "wallet-outline"} 
-          size={24} 
-          color={connected ? theme.colors.success : theme.colors.primary} 
-        />
-        <Text style={[
-          styles.floatingWalletText,
-          { color: connected ? theme.colors.success : theme.colors.primary }
-        ]}>
-          {connected ? getShortAddress() : 'Connect'}
-        </Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -711,34 +674,6 @@ const styles = StyleSheet.create({
   userStatLabel: {
     fontSize: 12,
     color: theme.colors.textSecondary,
-  },
-  floatingWalletButton: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 25,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.outline,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  floatingWalletButtonConnected: {
-    borderColor: theme.colors.success,
-    borderWidth: 2,
-    backgroundColor: theme.colors.surface,
-  },
-  floatingWalletText: {
-    marginLeft: 6,
-    fontSize: 14,
-    fontWeight: '600',
   },
 });
 

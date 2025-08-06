@@ -16,7 +16,6 @@ const MobileWalletAdapterContext = createContext(null);
 const APP_IDENTITY = {
   name: 'Incrypt',
   uri: 'https://incrypt.network',
-  icon: 'https://incrypt.network/icon.png',
 };
 
 export function MobileWalletAdapterProvider({ children }) {
