@@ -1,14 +1,13 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { Alert, Platform } from 'react-native';
 import { 
-  transact, 
-  Web3MobileWallet, 
-  AuthorizationResult, 
-  AuthorizeAPI, 
-  DeauthorizeAPI, 
-  ReauthorizeAPI 
+  transact,
+  Web3MobileWallet,
+  APP_IDENTITY,
 } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { Buffer } from 'buffer';
+import bs58 from 'bs58';
 
 const MobileWalletAdapterContext = createContext(null);
 
@@ -22,6 +21,47 @@ export function MobileWalletAdapterProvider({ children }) {
   const [authorizedWallet, setAuthorizedWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
   const [isNativeModuleAvailable, setIsNativeModuleAvailable] = useState(false);
+
+  // Function to decode base64 address to base58
+  const decodeBase64Address = (base64Address) => {
+    try {
+      // Remove any padding and decode base64
+      const cleanBase64 = base64Address.replace(/=/g, '');
+      const decoded = Buffer.from(cleanBase64, 'base64');
+      
+      // Convert to base58 using bs58 library
+      const base58Address = bs58.encode(decoded);
+      console.log('Converted base64 to base58:', base64Address, '->', base58Address);
+      return base58Address;
+    } catch (error) {
+      console.error('Error decoding base64 address:', error);
+      return null;
+    }
+  };
+
+  // Function to create PublicKey from various formats
+  const createPublicKey = (input) => {
+    try {
+      // First try direct creation
+      return new PublicKey(input);
+    } catch (error) {
+      // If it's base64 encoded (contains +, /, or =), try to decode it
+      if (input.includes('+') || input.includes('/') || input.includes('=')) {
+        console.log('Detected base64 address, attempting to decode:', input);
+        const decoded = decodeBase64Address(input);
+        if (decoded) {
+          try {
+            const publicKey = new PublicKey(decoded);
+            console.log('Successfully created PublicKey from decoded address:', publicKey.toString());
+            return publicKey;
+          } catch (decodeError) {
+            console.error('Failed to create PublicKey from decoded address:', decodeError);
+          }
+        }
+      }
+      throw error;
+    }
+  };
 
   // Check if native module is available
   React.useEffect(() => {
@@ -74,13 +114,12 @@ export function MobileWalletAdapterProvider({ children }) {
       try {
         // Check if we have accounts in the result (Solana Mobile Wallet Adapter format)
         if (result.accounts && result.accounts.length > 0) {
-          console.log('Found accounts in result:', result.accounts);
           const account = result.accounts[0];
           console.log('Using first account:', account);
           
           if (account.address) {
             console.log('Creating PublicKey from account address:', account.address);
-            publicKey = new PublicKey(account.address);
+            publicKey = createPublicKey(account.address);
           } else {
             throw new Error('No address in account');
           }
@@ -95,7 +134,7 @@ export function MobileWalletAdapterProvider({ children }) {
           
           if (typeof result.publicKey === 'string') {
             console.log('Creating PublicKey from string:', result.publicKey);
-            publicKey = new PublicKey(result.publicKey);
+            publicKey = createPublicKey(result.publicKey);
           } else if (result.publicKey && result.publicKey.toBytes) {
             console.log('Using existing PublicKey object');
             publicKey = result.publicKey;
@@ -107,7 +146,7 @@ export function MobileWalletAdapterProvider({ children }) {
             publicKey = new PublicKey(result.publicKey.toBase58());
           } else if (result.publicKey && result.publicKey.toString) {
             console.log('Creating PublicKey from toString method');
-            publicKey = new PublicKey(result.publicKey.toString());
+            publicKey = createPublicKey(result.publicKey.toString());
           } else {
             console.error('Unknown publicKey format:', result.publicKey);
             throw new Error(`Invalid publicKey format: ${typeof result.publicKey}`);
