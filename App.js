@@ -25,30 +25,12 @@ import { View, Text, StyleSheet, LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// Import screens
-import OnboardingScreen from './src/screens/OnboardingScreen';
-import ConnectWalletScreen from './src/screens/ConnectWalletScreen';
-import DashboardScreen from './src/screens/DashboardScreen';
-import PoolsScreen from './src/screens/PoolsScreen';
-import CreatePoolScreen from './src/screens/CreatePoolScreen';
-import PoolDetailScreen from './src/screens/PoolDetailScreen';
-import LendingScreen from './src/screens/LendingScreen';
-import SupplyScreen from './src/screens/SupplyScreen';
-import BorrowScreen from './src/screens/BorrowScreen';
-import WithdrawScreen from './src/screens/WithdrawScreen';
-import RepayScreen from './src/screens/RepayScreen';
-import LendingStrategiesScreen from './src/screens/LendingStrategiesScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
-import TransactionHistoryScreen from './src/screens/TransactionHistoryScreen';
-import SecuritySettingsScreen from './src/screens/SecuritySettingsScreen';
-import WalletScreen from './src/screens/WalletScreen';
-import TokenSafetyScreen from './src/screens/TokenSafetyScreen';
-import MeteoraPointsScreen from './src/screens/MeteoraPointsScreen';
+// Import navigation
+import AppNavigator from './src/navigation/AppNavigator';
 
 // Import providers
 import { MobileWalletAdapterProvider } from './src/contexts/MobileWalletAdapterProvider';
@@ -60,9 +42,6 @@ import theme from './src/theme';
 
 // Import hooks
 import { useOTAUpdates } from './src/hooks/useOTAUpdates';
-
-// Create navigator
-const Stack = createNativeStackNavigator();
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -122,112 +101,7 @@ export default function App() {
             <MobileWalletAdapterProvider>
               <WalletProvider>
                 <NavigationContainer>
-                  <Stack.Navigator
-                    initialRouteName="Onboarding"
-                    screenOptions={{
-                      headerStyle: {
-                        backgroundColor: '#000000',
-                      },
-                      headerTintColor: '#00ff88',
-                      headerTitleStyle: {
-                        fontWeight: 'bold',
-                      },
-                      contentStyle: {
-                        backgroundColor: '#000000',
-                      },
-                    }}
-                  >
-                    <Stack.Screen 
-                      name="Onboarding" 
-                      component={OnboardingScreen}
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen 
-                      name="ConnectWallet" 
-                      component={ConnectWalletScreen}
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen 
-                      name="Dashboard" 
-                      component={DashboardScreen}
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen 
-                      name="Pools" 
-                      component={PoolsScreen}
-                      options={{ title: 'Liquidity Pools' }}
-                    />
-                    <Stack.Screen 
-                      name="CreatePool" 
-                      component={CreatePoolScreen}
-                      options={{ title: 'Create Pool' }}
-                    />
-                    <Stack.Screen 
-                      name="PoolDetail" 
-                      component={PoolDetailScreen}
-                      options={{ title: 'Pool Details' }}
-                    />
-                    <Stack.Screen 
-                      name="Lending" 
-                      component={LendingScreen}
-                      options={{ title: 'Lending & Borrowing' }}
-                    />
-                    <Stack.Screen 
-                      name="Supply" 
-                      component={SupplyScreen}
-                      options={{ title: 'Supply Assets' }}
-                    />
-                    <Stack.Screen 
-                      name="Borrow" 
-                      component={BorrowScreen}
-                      options={{ title: 'Borrow Assets' }}
-                    />
-                    <Stack.Screen 
-                      name="Withdraw" 
-                      component={WithdrawScreen}
-                      options={{ title: 'Withdraw Assets' }}
-                    />
-                    <Stack.Screen 
-                      name="Repay" 
-                      component={RepayScreen}
-                      options={{ title: 'Repay Debt' }}
-                    />
-                    <Stack.Screen 
-                      name="LendingStrategies" 
-                      component={LendingStrategiesScreen}
-                      options={{ title: 'Lending Strategies' }}
-                    />
-                    <Stack.Screen 
-                      name="Settings" 
-                      component={SettingsScreen}
-                      options={{ title: 'Settings' }}
-                    />
-                    <Stack.Screen 
-                      name="TransactionHistory" 
-                      component={TransactionHistoryScreen}
-                      options={{ title: 'Transaction History' }}
-                    />
-                    <Stack.Screen 
-                      name="SecuritySettings" 
-                      component={SecuritySettingsScreen}
-                      options={{ title: 'Security Settings' }}
-                    />
-                    <Stack.Screen 
-                      name="Wallet" 
-                      component={WalletScreen}
-                      options={{ title: 'Wallet' }}
-                    />
-                    <Stack.Screen 
-                      name="TokenSafety" 
-                      component={TokenSafetyScreen}
-                      options={{ title: 'Token Safety' }}
-                    />
-                    <Stack.Screen 
-                      name="MeteoraPoints" 
-                      component={MeteoraPointsScreen}
-                      options={{ title: 'Meteora Points' }}
-                    />
-                  </Stack.Navigator>
+                  <AppNavigator />
                 </NavigationContainer>
               </WalletProvider>
             </MobileWalletAdapterProvider>

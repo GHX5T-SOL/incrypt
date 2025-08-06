@@ -35,17 +35,18 @@ const DashboardScreen = () => {
     };
   }
   
-  let walletData = { 
-    connected: false, 
-    balance: 0, 
-    getShortAddress: () => '', 
-    connect: () => console.log('Connect not available'),
-    disconnect: () => console.log('Disconnect not available')
-  };
+  let walletData;
   try {
     walletData = useWallet();
   } catch (error) {
     console.log('Wallet hook not available, using fallback');
+    walletData = { 
+      connected: false, 
+      balance: 0, 
+      getShortAddress: () => '', 
+      connect: () => console.log('Connect not available'),
+      disconnect: () => console.log('Disconnect not available')
+    };
   }
   
   let meteoraData = { pools: [], loading: false, fetchPools: () => {} };

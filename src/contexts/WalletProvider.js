@@ -72,6 +72,11 @@ export function WalletProvider({ children }) {
     balance,
     tokenBalances,
     loading,
+    getShortAddress: () => {
+      if (!publicKey) return '';
+      const address = publicKey.toString();
+      return `${address.slice(0, 4)}...${address.slice(-4)}`;
+    },
   }), [
     publicKey, 
     connecting, 
