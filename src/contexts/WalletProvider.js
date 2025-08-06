@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMobileWalletAdapter } from './MobileWalletAdapterProvider';
 import { useConnection } from './ConnectionProvider';
 
-const WalletContext = createContext(null);
+export const WalletContext = createContext(null);
 
 export function WalletProvider({ children }) {
   const { authorizedWallet, connect, disconnect, signAndSendTransaction, connecting } = useMobileWalletAdapter();
