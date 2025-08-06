@@ -8,7 +8,8 @@ import {
   RefreshControl,
   Dimensions,
   Animated,
-  Alert
+  Alert,
+  SafeAreaView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -177,11 +178,11 @@ const DashboardScreen = () => {
   };
 
   const navigateToPoolDetail = (poolId) => {
-    navigation.navigate('PoolDetail', { poolId });
+    navigation.navigate('Pools', { screen: 'PoolDetail', params: { poolId } });
   };
 
   const navigateToLendingDetail = (lendingId) => {
-    navigation.navigate('LendingDetail', { lendingId });
+    navigation.navigate('Lending', { screen: 'LendingDetail', params: { lendingId } });
   };
 
   const getRiskColor = (risk) => {
@@ -202,247 +203,279 @@ const DashboardScreen = () => {
   };
 
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.colors.primary}
-        />
-      }
-    >
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Welcome Section */}
-        <View style={styles.welcomeSection}>
-          <View style={styles.welcomeHeader}>
-            <MaterialCommunityIcons 
-              name={connected ? "wallet" : "wallet-outline"} 
-              size={32} 
-              color={connected ? theme.colors.success : theme.colors.primary} 
-              style={styles.welcomeIcon}
-            />
-            <View style={styles.welcomeTextContainer}>
-              <Text style={styles.welcomeTitle}>
-                {connected ? 'Welcome back!' : 'Welcome to Incrypt!'}
-              </Text>
-              <Text style={styles.welcomeSubtitle}>
-                {connected 
-                  ? `${getShortAddress()} • ${formatSOL(balance * 1e9)} SOL`
-                  : 'Connect your wallet to start earning 💰'
-                }
-              </Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        style={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          {/* Welcome Section */}
+          <View style={styles.welcomeSection}>
+            <View style={styles.welcomeHeader}>
+              <MaterialCommunityIcons 
+                name={connected ? "wallet" : "wallet-outline"} 
+                size={32} 
+                color={connected ? theme.colors.success : theme.colors.primary} 
+                style={styles.welcomeIcon}
+              />
+              <View style={styles.welcomeTextContainer}>
+                <Text style={styles.welcomeTitle}>
+                  {connected ? 'Welcome back!' : 'Welcome to Incrypt!'}
+                </Text>
+                <Text style={styles.welcomeSubtitle}>
+                  {connected 
+                    ? `${getShortAddress()} • ${formatSOL(balance * 1e9)} SOL`
+                    : 'Connect your wallet to start earning 💰'
+                  }
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Quick Stats */}
-        <View style={styles.statsContainer}>
-          <NeonCard style={styles.statCard}>
-            <MaterialCommunityIcons 
-              name="chart-bubble" 
-              size={24} 
-              color={theme.colors.primary} 
-            />
-            <Text style={styles.statValue}>{formatNumber(dashboardData.totalPools)}</Text>
-            <Text style={styles.statLabel}>Total Pools</Text>
-          </NeonCard>
-
-          <NeonCard style={styles.statCard}>
-            <MaterialCommunityIcons 
-              name="currency-usd" 
-              size={24} 
-              color={theme.colors.secondary} 
-            />
-            <Text style={styles.statValue}>{formatUSD(dashboardData.totalTVL)}</Text>
-            <Text style={styles.statLabel}>Total TVL</Text>
-          </NeonCard>
-
-          <NeonCard style={styles.statCard}>
-            <MaterialCommunityIcons 
-              name="trending-up" 
-              size={24} 
-              color={theme.colors.accent} 
-            />
-            <Text style={styles.statValue}>{formatPercentage(dashboardData.avgAPR)}</Text>
-            <Text style={styles.statLabel}>Avg APR</Text>
-          </NeonCard>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-          </View>
-          <View style={styles.actionsGrid}>
-            <TouchableOpacity style={styles.actionButton} onPress={navigateToPools}>
+          {/* Quick Stats */}
+          <View style={styles.statsContainer}>
+            <NeonCard style={styles.statCard}>
               <MaterialCommunityIcons 
                 name="chart-bubble" 
-                size={32} 
+                size={24} 
                 color={theme.colors.primary} 
               />
-              <Text style={styles.actionText}>Browse Pools</Text>
-            </TouchableOpacity>
+              <Text style={styles.statValue}>{formatNumber(dashboardData.totalPools)}</Text>
+              <Text style={styles.statLabel}>Total Pools</Text>
+            </NeonCard>
 
-            <TouchableOpacity style={styles.actionButton} onPress={navigateToPositions}>
+            <NeonCard style={styles.statCard}>
               <MaterialCommunityIcons 
-                name="wallet" 
-                size={32} 
+                name="currency-usd" 
+                size={24} 
                 color={theme.colors.secondary} 
               />
-              <Text style={styles.actionText}>My Positions</Text>
-            </TouchableOpacity>
+              <Text style={styles.statValue}>{formatUSD(dashboardData.totalTVL)}</Text>
+              <Text style={styles.statLabel}>Total TVL</Text>
+            </NeonCard>
 
-            <TouchableOpacity style={styles.actionButton} onPress={navigateToLending}>
-              <MaterialCommunityIcons 
-                name="bank" 
-                size={32} 
-                color={theme.colors.accent} 
-              />
-              <Text style={styles.actionText}>Lending</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('LendingStrategies')}>
+            <NeonCard style={styles.statCard}>
               <MaterialCommunityIcons 
                 name="trending-up" 
-                size={32} 
-                color={theme.colors.neonBlue} 
-              />
-              <Text style={styles.actionText}>Strategies</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('TokenSafety')}>
-              <MaterialCommunityIcons 
-                name="shield-check" 
-                size={32} 
+                size={24} 
                 color={theme.colors.accent} 
               />
-              <Text style={styles.actionText}>Token Safety</Text>
-            </TouchableOpacity>
+              <Text style={styles.statValue}>{formatPercentage(dashboardData.avgAPR)}</Text>
+              <Text style={styles.statLabel}>Avg APR</Text>
+            </NeonCard>
           </View>
-        </View>
 
-        {/* Featured Pools */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Pools</Text>
-            <TouchableOpacity onPress={navigateToPools}>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
+          {/* Quick Actions */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Quick Actions</Text>
+            </View>
+            <View style={styles.actionsGrid}>
+              <TouchableOpacity style={styles.actionButton} onPress={navigateToPools}>
+                <MaterialCommunityIcons 
+                  name="chart-bubble" 
+                  size={32} 
+                  color={theme.colors.primary} 
+                />
+                <Text style={styles.actionText}>Browse Pools</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionButton} onPress={navigateToPositions}>
+                <MaterialCommunityIcons 
+                  name="wallet" 
+                  size={32} 
+                  color={theme.colors.secondary} 
+                />
+                <Text style={styles.actionText}>My Positions</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionButton} onPress={navigateToLending}>
+                <MaterialCommunityIcons 
+                  name="bank" 
+                  size={32} 
+                  color={theme.colors.accent} 
+                />
+                <Text style={styles.actionText}>Lending</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Lending', { screen: 'LendingStrategies' })}>
+                <MaterialCommunityIcons 
+                  name="trending-up" 
+                  size={32} 
+                  color={theme.colors.neonBlue} 
+                />
+                <Text style={styles.actionText}>Strategies</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('Lending', { screen: 'TokenSafety' })}>
+                <MaterialCommunityIcons 
+                  name="shield-check" 
+                  size={32} 
+                  color={theme.colors.accent} 
+                />
+                <Text style={styles.actionText}>Token Safety</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          
-          {featuredPools.map((pool, index) => (
-            <TouchableOpacity
-              key={pool.id}
-              style={styles.poolCard}
-              onPress={() => navigateToPoolDetail(pool.id)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.poolHeader}>
-                <View style={styles.poolInfo}>
-                  <Text style={styles.poolName}>{pool.name}</Text>
-                  <View style={[styles.poolType, { backgroundColor: getPoolTypeColor(pool.type) + '20' }]}>
-                    <Text style={[styles.poolTypeText, { color: getPoolTypeColor(pool.type) }]}>
-                      {pool.type}
+
+          {/* Featured Pools */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Featured Pools</Text>
+              <TouchableOpacity onPress={navigateToPools}>
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {featuredPools.map((pool, index) => (
+              <TouchableOpacity
+                key={pool.id}
+                style={styles.poolCard}
+                onPress={() => navigateToPoolDetail(pool.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.poolHeader}>
+                  <View style={styles.poolInfo}>
+                    <Text style={styles.poolName}>{pool.name}</Text>
+                    <View style={[styles.poolType, { backgroundColor: getPoolTypeColor(pool.type) + '20' }]}>
+                      <Text style={[styles.poolTypeText, { color: getPoolTypeColor(pool.type) }]}>
+                        {pool.type}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.safetyBadge, { backgroundColor: pool.safety === 'safe' ? theme.colors.success + '20' : theme.colors.warning + '20' }]}>
+                    <MaterialCommunityIcons 
+                      name="shield-check" 
+                      size={16} 
+                      color={pool.safety === 'safe' ? theme.colors.success : theme.colors.warning} 
+                    />
+                  </View>
+                </View>
+                
+                <View style={styles.poolStats}>
+                  <View style={styles.poolStat}>
+                    <Text style={styles.poolStatLabel}>TVL</Text>
+                    <Text style={styles.poolStatValue}>{formatUSD(pool.tvl)}</Text>
+                  </View>
+                  <View style={styles.poolStat}>
+                    <Text style={styles.poolStatLabel}>APR</Text>
+                    <Text style={styles.poolStatValue}>{formatPercentage(pool.apr)}</Text>
+                  </View>
+                  <View style={styles.poolStat}>
+                    <Text style={styles.poolStatLabel}>24h Vol</Text>
+                    <Text style={styles.poolStatValue}>{formatUSD(pool.volume24h)}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Lending Opportunities */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Lending Opportunities</Text>
+              <TouchableOpacity onPress={navigateToLending}>
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {lendingOpportunities.map((opportunity, index) => (
+              <TouchableOpacity
+                key={opportunity.id}
+                style={styles.lendingCard}
+                onPress={() => navigateToLendingDetail(opportunity.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.lendingHeader}>
+                  <View style={styles.lendingInfo}>
+                    <MaterialCommunityIcons 
+                      name={opportunity.icon} 
+                      size={24} 
+                      color={theme.colors.primary} 
+                    />
+                    <View style={styles.lendingDetails}>
+                      <Text style={styles.lendingAsset}>{opportunity.asset}</Text>
+                      <Text style={styles.lendingProtocol}>{opportunity.protocol}</Text>
+                    </View>
+                  </View>
+                  <View style={[styles.riskBadge, { backgroundColor: getRiskColor(opportunity.risk) + '20' }]}>
+                    <Text style={[styles.riskText, { color: getRiskColor(opportunity.risk) }]}>
+                      Risk: {opportunity.risk.toUpperCase()}
                     </Text>
                   </View>
                 </View>
-                <View style={[styles.safetyBadge, { backgroundColor: pool.safety === 'safe' ? theme.colors.success + '20' : theme.colors.warning + '20' }]}>
-                  <MaterialCommunityIcons 
-                    name="shield-check" 
-                    size={16} 
-                    color={pool.safety === 'safe' ? theme.colors.success : theme.colors.warning} 
-                  />
-                </View>
-              </View>
-              
-              <View style={styles.poolStats}>
-                <View style={styles.poolStat}>
-                  <Text style={styles.poolStatLabel}>TVL</Text>
-                  <Text style={styles.poolStatValue}>{formatUSD(pool.tvl)}</Text>
-                </View>
-                <View style={styles.poolStat}>
-                  <Text style={styles.poolStatLabel}>APR</Text>
-                  <Text style={styles.poolStatValue}>{formatPercentage(pool.apr)}</Text>
-                </View>
-                <View style={styles.poolStat}>
-                  <Text style={styles.poolStatLabel}>24h Vol</Text>
-                  <Text style={styles.poolStatValue}>{formatUSD(pool.volume24h)}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Lending Opportunities */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Lending Opportunities</Text>
-            <TouchableOpacity onPress={navigateToLending}>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-          
-          {lendingOpportunities.map((opportunity, index) => (
-            <TouchableOpacity
-              key={opportunity.id}
-              style={styles.lendingCard}
-              onPress={() => navigateToLendingDetail(opportunity.id)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.lendingHeader}>
-                <View style={styles.lendingInfo}>
-                  <MaterialCommunityIcons 
-                    name={opportunity.icon} 
-                    size={24} 
-                    color={theme.colors.primary} 
-                  />
-                  <View style={styles.lendingDetails}>
-                    <Text style={styles.lendingAsset}>{opportunity.asset}</Text>
-                    <Text style={styles.lendingProtocol}>{opportunity.protocol}</Text>
+                
+                <View style={styles.lendingStats}>
+                  <View style={styles.lendingStat}>
+                    <Text style={styles.lendingStatLabel}>APY</Text>
+                    <Text style={styles.lendingStatValue}>{formatPercentage(opportunity.apy)}</Text>
+                  </View>
+                  <View style={styles.lendingStat}>
+                    <Text style={styles.lendingStatLabel}>TVL</Text>
+                    <Text style={styles.lendingStatValue}>{formatUSD(opportunity.tvl)}</Text>
                   </View>
                 </View>
-                <View style={[styles.riskBadge, { backgroundColor: getRiskColor(opportunity.risk) + '20' }]}>
-                  <Text style={[styles.riskText, { color: getRiskColor(opportunity.risk) }]}>
-                    {opportunity.risk.toUpperCase()}
-                  </Text>
-                </View>
-              </View>
-              
-              <View style={styles.lendingStats}>
-                <View style={styles.lendingStat}>
-                  <Text style={styles.lendingStatLabel}>APY</Text>
-                  <Text style={styles.lendingStatValue}>{formatPercentage(opportunity.apy)}</Text>
-                </View>
-                <View style={styles.lendingStat}>
-                  <Text style={styles.lendingStatLabel}>TVL</Text>
-                  <Text style={styles.lendingStatValue}>{formatUSD(opportunity.tvl)}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* User Stats */}
-        {connected && dashboardData.userPositions > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Activity</Text>
-            <NeonCard variant="success" style={styles.userStatsCard}>
-              <View style={styles.userStatsRow}>
-                <View style={styles.userStat}>
-                  <Text style={styles.userStatValue}>{dashboardData.userPositions}</Text>
-                  <Text style={styles.userStatLabel}>Active Positions</Text>
-                </View>
-                <View style={styles.userStat}>
-                  <Text style={styles.userStatValue}>{formatUSD(dashboardData.userTVL)}</Text>
-                  <Text style={styles.userStatLabel}>Your TVL</Text>
-                </View>
-              </View>
-            </NeonCard>
+              </TouchableOpacity>
+            ))}
           </View>
-        )}
-      </Animated.View>
-    </ScrollView>
+
+          {/* User Stats */}
+          {connected && dashboardData.userPositions > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Your Activity</Text>
+              <NeonCard variant="success" style={styles.userStatsCard}>
+                <View style={styles.userStatsRow}>
+                  <View style={styles.userStat}>
+                    <Text style={styles.userStatValue}>{dashboardData.userPositions}</Text>
+                    <Text style={styles.userStatLabel}>Active Positions</Text>
+                  </View>
+                  <View style={styles.userStat}>
+                    <Text style={styles.userStatValue}>{formatUSD(dashboardData.userTVL)}</Text>
+                    <Text style={styles.userStatLabel}>Your TVL</Text>
+                  </View>
+                </View>
+              </NeonCard>
+            </View>
+          )}
+        </Animated.View>
+      </ScrollView>
+      
+      {/* Floating Wallet Connect Button */}
+      <TouchableOpacity 
+        style={[
+          styles.floatingWalletButton,
+          connected && styles.floatingWalletButtonConnected
+        ]}
+        onPress={() => {
+          if (connected) {
+            // Show wallet options
+            Alert.alert('Wallet Connected', 'Manage your wallet settings');
+          } else {
+            // Connect wallet
+            Alert.alert('Connect Wallet', 'Opening wallet connection...');
+          }
+        }}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons 
+          name={connected ? "wallet" : "wallet-outline"} 
+          size={24} 
+          color={connected ? theme.colors.success : theme.colors.primary} 
+        />
+        <Text style={[
+          styles.floatingWalletText,
+          { color: connected ? theme.colors.success : theme.colors.primary }
+        ]}>
+          {connected ? getShortAddress() : 'Connect'}
+        </Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 };
 
@@ -452,29 +485,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   content: {
-    padding: 16,
-  },
-  notConnectedContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  notConnectedTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.textSecondary,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  notConnectedSubtitle: {
-    fontSize: 16,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
+    padding: 20,
+    paddingTop: 10,
   },
   welcomeSection: {
-    marginBottom: 24,
+    marginBottom: 30,
+    marginTop: 10,
   },
   welcomeHeader: {
     flexDirection: 'row',
@@ -500,7 +516,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 30,
   },
   statCard: {
     flex: 1,
@@ -521,13 +537,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 30,
   },
   sectionHeader: {
-    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: theme.colors.text,
   },
@@ -540,23 +559,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 12,
   },
   actionButton: {
     width: '48%',
-    alignItems: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
-    marginBottom: 12,
+    padding: 20,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: theme.colors.outline,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   actionText: {
     fontSize: 14,
     fontWeight: '600',
     color: theme.colors.text,
     marginTop: 8,
+    textAlign: 'center',
   },
   poolCard: {
     backgroundColor: theme.colors.surface,
@@ -565,6 +589,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: theme.colors.outline,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   poolHeader: {
     flexDirection: 'row',
@@ -573,16 +602,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   poolInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flex: 1,
   },
   poolName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: theme.colors.text,
-    marginRight: 8,
+    marginBottom: 4,
   },
   poolType: {
+    alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -595,8 +624,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   poolStats: {
     flexDirection: 'row',
@@ -604,6 +631,7 @@ const styles = StyleSheet.create({
   },
   poolStat: {
     alignItems: 'center',
+    flex: 1,
   },
   poolStatLabel: {
     fontSize: 12,
@@ -612,7 +640,7 @@ const styles = StyleSheet.create({
   },
   poolStatValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: theme.colors.text,
   },
   lendingCard: {
@@ -622,6 +650,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: theme.colors.outline,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   lendingHeader: {
     flexDirection: 'row',
@@ -632,6 +665,7 @@ const styles = StyleSheet.create({
   lendingInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   lendingDetails: {
     marginLeft: 12,
@@ -660,6 +694,7 @@ const styles = StyleSheet.create({
   },
   lendingStat: {
     alignItems: 'center',
+    flex: 1,
   },
   lendingStatLabel: {
     fontSize: 12,
@@ -668,7 +703,7 @@ const styles = StyleSheet.create({
   },
   lendingStatValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: theme.colors.text,
   },
   userStatsCard: {
@@ -676,20 +711,49 @@ const styles = StyleSheet.create({
   },
   userStatsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
   },
   userStat: {
     alignItems: 'center',
+    flex: 1,
   },
   userStatValue: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: 4,
   },
   userStatLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: theme.colors.textSecondary,
+  },
+  floatingWalletButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: 25,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  floatingWalletButtonConnected: {
+    borderColor: theme.colors.success,
+    borderWidth: 2,
+    backgroundColor: theme.colors.surface,
+  },
+  floatingWalletText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
