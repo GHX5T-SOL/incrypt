@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useWallet } from '../hooks/useWallet';
+import { useWallet } from '../contexts/WalletProvider';
 import { useMeteora } from '../hooks/useMeteora';
 import { theme, neonStyles } from '../theme';
 import NeonCard from '../components/NeonCard';

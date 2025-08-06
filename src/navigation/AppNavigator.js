@@ -1,10 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from 'react-native-paper';
-import { WalletContext } from '../contexts/WalletProvider';
-import { useWallet } from '../hooks/useWallet';
 import Header from '../components/Header';
 
 // Main Screens
@@ -42,6 +39,18 @@ import MeteoraPointsScreen from '../screens/MeteoraPointsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+// Theme colors (hardcoded to avoid context issues)
+const colors = {
+  primary: '#00FF88',
+  secondary: '#FF0080',
+  accent: '#0080FF',
+  background: '#000000',
+  surface: '#1A1A1A',
+  text: '#FFFFFF',
+  textSecondary: '#CCCCCC',
+  outline: '#333333',
+};
 
 // Stack navigators for each tab
 const DashboardStack = () => (
@@ -101,9 +110,9 @@ const LendingStack = () => (
     <Stack.Screen name="Supply" component={SupplyScreen} />
     <Stack.Screen name="Borrow" component={BorrowScreen} />
     <Stack.Screen name="Withdraw" component={WithdrawScreen} />
-            <Stack.Screen name="Repay" component={RepayScreen} />
-        <Stack.Screen name="TokenSafety" component={TokenSafetyScreen} />
-        <Stack.Screen name="LendingStrategies" component={LendingStrategiesScreen} />
+    <Stack.Screen name="Repay" component={RepayScreen} />
+    <Stack.Screen name="TokenSafety" component={TokenSafetyScreen} />
+    <Stack.Screen name="LendingStrategies" component={LendingStrategiesScreen} />
   </Stack.Navigator>
 );
 
@@ -122,10 +131,8 @@ const SettingsStack = () => (
   </Stack.Navigator>
 );
 
-// Main tab navigator
+// Main tab navigator with bottom navigation
 const TabNavigator = () => {
-  const theme = useTheme();
-  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -146,11 +153,11 @@ const TabNavigator = () => {
 
           return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.textSecondary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.outline,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.outline,
           borderTopWidth: 1,
           paddingBottom: 5,
           paddingTop: 5,
