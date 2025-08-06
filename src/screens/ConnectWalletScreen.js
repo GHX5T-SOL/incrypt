@@ -8,13 +8,15 @@ import {
   Animated, 
   Easing,
   Dimensions,
-  ScrollView
+  ScrollView,
+  Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button, useTheme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useWallet } from '../hooks/useWallet';
+import { useMobileWalletAdapter } from '../contexts/MobileWalletAdapterProvider';
 import { neonStyles, theme } from '../theme';
 import NeonButton from '../components/NeonButton';
 
@@ -24,6 +26,7 @@ const ConnectWalletScreen = () => {
   const navigation = useNavigation();
   const themeColors = useTheme();
   const { connect, connected, connecting, error } = useWallet();
+  const { isNativeModuleAvailable } = useMobileWalletAdapter();
   const [animation] = useState(new Animated.Value(0));
   const [fadeAnimation] = useState(new Animated.Value(0));
 
@@ -57,7 +60,7 @@ const ConnectWalletScreen = () => {
   useEffect(() => {
     // If wallet is connected, navigate to main app
     if (connected) {
-      navigation.replace('Main');
+      navigation.replace('Dashboard');
     }
   }, [connected, navigation]);
 
@@ -68,6 +71,26 @@ const ConnectWalletScreen = () => {
   });
 
   const handleConnectWallet = async () => {
+    // Check if we're in Expo Go (no native module)
+    if (!isNativeModuleAvailable) {
+      Alert.alert(
+        'Development Build Required',
+        'Solana Mobile Wallet Adapter requires a custom development build. Please build the app with EAS Build to enable wallet connectivity.',
+        [
+          { 
+            text: 'Continue to Demo', 
+            onPress: () => navigation.replace('Dashboard'),
+            style: 'default'
+          },
+          { 
+            text: 'Cancel', 
+            style: 'cancel'
+          }
+        ]
+      );
+      return;
+    }
+
     try {
       await connect();
     } catch (error) {
@@ -98,7 +121,7 @@ const ConnectWalletScreen = () => {
       icon: 'shield-check',
       title: 'Safety First',
       description: 'Rugcheck integration for token safety',
-      color: theme.colors.success,
+      color: theme.colors.neonBlue,
     },
   ];
 

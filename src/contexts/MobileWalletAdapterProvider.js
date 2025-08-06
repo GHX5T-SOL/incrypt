@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { 
   transact, 
   Web3MobileWallet, 
@@ -12,17 +12,54 @@ import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 
 const MobileWalletAdapterContext = createContext(null);
 
-export function MobileWalletAdapterProvider({ children, appIdentity }) {
+// App identity for Solana Mobile Wallet Adapter
+const APP_IDENTITY = {
+  name: 'Incrypt',
+  uri: 'https://incrypt.network',
+  icon: 'https://incrypt.network/icon.png',
+};
+
+export function MobileWalletAdapterProvider({ children }) {
   const [authorizedWallet, setAuthorizedWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
+  const [isNativeModuleAvailable, setIsNativeModuleAvailable] = useState(false);
+
+  // Check if native module is available
+  React.useEffect(() => {
+    const checkNativeModule = async () => {
+      try {
+        // Try to access the native module
+        const { NativeModules } = require('react-native');
+        const hasSolanaModule = NativeModules.SolanaMobileWalletAdapter;
+        setIsNativeModuleAvailable(!!hasSolanaModule);
+      } catch (error) {
+        console.log('Solana Mobile Wallet Adapter not available in Expo Go');
+        setIsNativeModuleAvailable(false);
+      }
+    };
+    
+    checkNativeModule();
+  }, []);
 
   const connect = useCallback(async () => {
+    // If not in development build, show message
+    if (!isNativeModuleAvailable) {
+      Alert.alert(
+        'Development Build Required',
+        'Solana Mobile Wallet Adapter requires a custom development build. Please build the app with EAS Build.',
+        [
+          { text: 'OK', onPress: () => console.log('User acknowledged') }
+        ]
+      );
+      return null;
+    }
+
     try {
       setConnecting(true);
       const result = await transact(async (wallet) => {
         const authorizationResult = await wallet.authorize({
           cluster: 'mainnet-beta',
-          identity: appIdentity,
+          identity: APP_IDENTITY,
         });
         return authorizationResult;
       });
@@ -41,10 +78,13 @@ export function MobileWalletAdapterProvider({ children, appIdentity }) {
     } finally {
       setConnecting(false);
     }
-  }, [appIdentity]);
+  }, [isNativeModuleAvailable]);
 
   const disconnect = useCallback(async () => {
-    if (!authorizedWallet) return;
+    if (!authorizedWallet || !isNativeModuleAvailable) {
+      setAuthorizedWallet(null);
+      return;
+    }
     
     try {
       await transact(async (wallet) => {
@@ -57,11 +97,15 @@ export function MobileWalletAdapterProvider({ children, appIdentity }) {
     } finally {
       setAuthorizedWallet(null);
     }
-  }, [authorizedWallet]);
+  }, [authorizedWallet, isNativeModuleAvailable]);
 
   const signAndSendTransaction = useCallback(async (transaction, connection) => {
     if (!authorizedWallet) {
       throw new Error('Wallet not connected');
+    }
+
+    if (!isNativeModuleAvailable) {
+      throw new Error('Solana Mobile Wallet Adapter not available');
     }
 
     try {
@@ -82,7 +126,7 @@ export function MobileWalletAdapterProvider({ children, appIdentity }) {
       console.error('Error signing transaction:', error);
       throw error;
     }
-  }, [authorizedWallet]);
+  }, [authorizedWallet, isNativeModuleAvailable]);
 
   const value = useMemo(() => ({
     authorizedWallet,
@@ -90,7 +134,8 @@ export function MobileWalletAdapterProvider({ children, appIdentity }) {
     connect,
     disconnect,
     signAndSendTransaction,
-  }), [authorizedWallet, connecting, connect, disconnect, signAndSendTransaction]);
+    isNativeModuleAvailable,
+  }), [authorizedWallet, connecting, connect, disconnect, signAndSendTransaction, isNativeModuleAvailable]);
 
   return (
     <MobileWalletAdapterContext.Provider value={value}>

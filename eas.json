@@ -1,29 +1,50 @@
 {
   "cli": {
-    "version": ">= 16.9.0",
-    "appVersionSource": "remote"
+    "version": ">= 12.0.0"
   },
   "build": {
-    "base": {
-      "pnpm": "10.12.3"
-    },
     "development": {
-      "extends": "base",
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "demo"
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.incrypt.network"
+      },
+      "extends": "base",
+      "channel": "demo",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "preview": {
-      "extends": "base",
       "distribution": "internal",
-      "channel": "demo"
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.incrypt.network"
+      },
+      "extends": "base",
+      "channel": "demo",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
-      "extends": "base",
-      "autoIncrement": true
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.incrypt.network"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {
     "production": {}
+  },
+  "base": {
+    "android": {
+      "buildType": "apk",
+      "newArchEnabled": false
+    },
+    "ios": {
+      "newArchEnabled": false
+    }
   }
 } 
