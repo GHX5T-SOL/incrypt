@@ -57,7 +57,8 @@
     "react-native-svg": "15.11.2",
     "react-native-toast-message": "^2.1.6",
     "react-native-web": "^0.20.0",
-    "victory-native": "^36.6.11"
+    "victory-native": "^36.6.11",
+    "expo-dev-client": "~5.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
