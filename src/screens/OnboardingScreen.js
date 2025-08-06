@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Dimensions,
   Animated,
+  StatusBar,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-paper';
@@ -98,7 +100,7 @@ const OnboardingScreen = ({ onDone }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
       <View style={styles.slidesContainer}>
         <ScrollView
