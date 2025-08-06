@@ -33,8 +33,22 @@ const DashboardScreen = () => {
     };
   }
   
-  const { connected, balance, getShortAddress } = useWallet();
-  const { pools, loading: meteoraLoading, fetchPools } = useMeteora();
+  let walletData = { connected: false, balance: 0, getShortAddress: () => '' };
+  try {
+    walletData = useWallet();
+  } catch (error) {
+    console.log('Wallet hook not available, using fallback');
+  }
+  
+  let meteoraData = { pools: [], loading: false, fetchPools: () => {} };
+  try {
+    meteoraData = useMeteora();
+  } catch (error) {
+    console.log('Meteora hook not available, using fallback');
+  }
+  
+  const { connected, balance, getShortAddress } = walletData;
+  const { pools, loading: meteoraLoading, fetchPools } = meteoraData;
   
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardData, setDashboardData] = useState({
