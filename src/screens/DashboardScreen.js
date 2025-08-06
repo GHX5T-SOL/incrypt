@@ -22,7 +22,17 @@ import { formatSOL, formatUSD, formatPercentage, formatNumber } from '../utils/f
 const { width, height } = Dimensions.get('window');
 
 const DashboardScreen = () => {
-  const navigation = useNavigation();
+  let navigation;
+  try {
+    navigation = useNavigation();
+  } catch (error) {
+    console.log('Navigation not available, using fallback');
+    navigation = {
+      navigate: () => console.log('Navigation not available'),
+      goBack: () => console.log('Navigation not available'),
+    };
+  }
+  
   const { connected, balance, getShortAddress } = useWallet();
   const { pools, loading: meteoraLoading, fetchPools } = useMeteora();
   
