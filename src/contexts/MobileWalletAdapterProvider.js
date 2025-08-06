@@ -11,12 +11,6 @@ import bs58 from 'bs58';
 
 const MobileWalletAdapterContext = createContext(null);
 
-// App identity for Solana Mobile Wallet Adapter
-const APP_IDENTITY = {
-  name: 'Incrypt',
-  uri: 'https://incrypt.network',
-};
-
 export function MobileWalletAdapterProvider({ children }) {
   const [authorizedWallet, setAuthorizedWallet] = useState(null);
   const [connecting, setConnecting] = useState(false);
