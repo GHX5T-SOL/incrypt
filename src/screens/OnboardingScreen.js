@@ -57,7 +57,6 @@ const OnboardingScreen = ({ onDone }) => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const slidesRef = useRef(null);
   const navigation = useNavigation();
-  const theme = useTheme();
 
   const viewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems && viewableItems.length > 0 && viewableItems[0]) {
