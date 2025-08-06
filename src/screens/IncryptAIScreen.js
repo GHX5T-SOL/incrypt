@@ -253,17 +253,21 @@ const styles = StyleSheet.create({
   infoCard: {
     marginBottom: 16,
     padding: 16,
+    alignItems: 'center',
+    textAlign: 'center',
   },
   infoTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: theme.colors.text,
     marginBottom: 8,
+    textAlign: 'center',
   },
   infoText: {
     fontSize: 14,
     color: theme.colors.textSecondary,
     lineHeight: 20,
+    textAlign: 'center',
   },
   examplesToggle: {
     flexDirection: 'row',

@@ -221,7 +221,6 @@ incrypt/
 - **Token Safety Analysis** - Instant risk assessment via AI
 - **Leveraged Farming Design** - Complex strategy creation
 - **Market Intelligence** - Real-time DeFi insights and trends
-- **Cyberpunk Aesthetic** - Stunning neon UI with markdown support
 
 ### **🔒 Security Features**
 - **Biometric Authentication** - Enhanced security

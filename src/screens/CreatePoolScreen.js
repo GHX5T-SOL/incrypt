@@ -9,6 +9,9 @@ import {
   StatusBar,
   Animated,
   TextInput,
+  Modal,
+  FlatList,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -65,15 +68,99 @@ const CreatePoolScreen = () => {
   const [showTokenSelector, setShowTokenSelector] = useState(false);
   const [selectingToken, setSelectingToken] = useState(1);
   const [safetyCheck, setSafetyCheck] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showContractInput, setShowContractInput] = useState(false);
+  const [contractAddress, setContractAddress] = useState('');
 
-  // Mock tokens for demonstration
+  // DAMM-specific state
+  const [feeTier, setFeeTier] = useState('0.25');
+  const [startTime, setStartTime] = useState('now');
+  const [dynamicFee, setDynamicFee] = useState(true);
+  const [feeCollectionToken, setFeeCollectionToken] = useState('both');
+  const [feeScheduler, setFeeScheduler] = useState(true);
+  const [feeSchedulerMode, setFeeSchedulerMode] = useState('exponential');
+  const [customStartTime, setCustomStartTime] = useState('');
+
+  // Enhanced token list with more details
   const availableTokens = [
-    { symbol: 'SOL', name: 'Solana', price: 150.25, balance: 10, icon: 'currency-btc' },
-    { symbol: 'USDC', name: 'USD Coin', price: 1.00, balance: 1500, icon: 'currency-usd' },
-    { symbol: 'BONK', name: 'Bonk', price: 0.00001234, balance: 10000000, icon: 'currency-btc' },
-    { symbol: 'JTO', name: 'Jito', price: 2.45, balance: 100, icon: 'currency-btc' },
-    { symbol: 'ORCA', name: 'Orca', price: 0.75, balance: 200, icon: 'currency-btc' },
+    { 
+      symbol: 'SOL', 
+      name: 'Solana', 
+      price: 150.25, 
+      balance: 10, 
+      icon: require('../../assets/tokens/sol.png'),
+      address: 'So11111111111111111111111111111111111111112',
+      marketCap: 65000000000,
+      volume24h: 2500000000
+    },
+    { 
+      symbol: 'USDC', 
+      name: 'USD Coin', 
+      price: 1.00, 
+      balance: 1500, 
+      icon: require('../../assets/tokens/usdc.png'),
+      address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      marketCap: 25000000000,
+      volume24h: 5000000000
+    },
+    { 
+      symbol: 'BONK', 
+      name: 'Bonk', 
+      price: 0.00001234, 
+      balance: 10000000, 
+      icon: require('../../assets/tokens/bonk.png'),
+      address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+      marketCap: 850000000,
+      volume24h: 15000000
+    },
+    { 
+      symbol: 'JTO', 
+      name: 'Jito', 
+      price: 2.45, 
+      balance: 100, 
+      icon: require('../../assets/tokens/jto.png'),
+      address: 'j1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+      marketCap: 245000000,
+      volume24h: 5000000
+    },
+    { 
+      symbol: 'ORCA', 
+      name: 'Orca', 
+      price: 0.75, 
+      balance: 200, 
+      icon: require('../../assets/orca-logo.webp'),
+      address: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
+      marketCap: 75000000,
+      volume24h: 2000000
+    },
+    { 
+      symbol: 'RAY', 
+      name: 'Raydium', 
+      price: 0.85, 
+      balance: 500, 
+      icon: 'currency-btc', // Fallback to icon
+      address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
+      marketCap: 85000000,
+      volume24h: 3000000
+    },
+    { 
+      symbol: 'SRM', 
+      name: 'Serum', 
+      price: 0.12, 
+      balance: 1000, 
+      icon: 'currency-btc', // Fallback to icon
+      address: 'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt',
+      marketCap: 12000000,
+      volume24h: 800000
+    },
   ];
+
+  // Filter tokens based on search query
+  const filteredTokens = availableTokens.filter(token =>
+    token.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    token.address.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     startFadeAnimation();
@@ -94,11 +181,32 @@ const CreatePoolScreen = () => {
       setToken2(token);
     }
     setShowTokenSelector(false);
+    setSearchQuery('');
+    setShowContractInput(false);
   };
 
   const openTokenSelector = (tokenPosition) => {
     setSelectingToken(tokenPosition);
     setShowTokenSelector(true);
+    setSearchQuery('');
+    setShowContractInput(false);
+  };
+
+  const handleContractAddressSubmit = () => {
+    if (contractAddress.trim()) {
+      // Mock token for demonstration
+      const customToken = {
+        symbol: 'CUSTOM',
+        name: 'Custom Token',
+        price: 0,
+        balance: 0,
+        icon: 'currency-btc',
+        address: contractAddress.trim(),
+        marketCap: 0,
+        volume24h: 0
+      };
+      handleSelectToken(customToken);
+    }
   };
 
   const calculateToken2Amount = () => {
@@ -227,44 +335,130 @@ const CreatePoolScreen = () => {
     if (!showTokenSelector) return null;
 
     return (
-      <View style={styles.tokenSelectorOverlay}>
-        <View style={styles.tokenSelector}>
-          <View style={styles.tokenSelectorHeader}>
-            <Text style={styles.tokenSelectorTitle}>Select Token</Text>
-            <TouchableOpacity onPress={() => setShowTokenSelector(false)}>
-              <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView style={styles.tokenList}>
-            {availableTokens.map((token) => (
-              <TouchableOpacity
-                key={token.symbol}
-                style={styles.tokenItem}
-                onPress={() => handleSelectToken(token)}
+      <Modal
+        visible={showTokenSelector}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowTokenSelector(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.tokenSelector}>
+            <View style={styles.tokenSelectorHeader}>
+              <Text style={styles.tokenSelectorTitle}>Select Token</Text>
+              <TouchableOpacity 
+                onPress={() => setShowTokenSelector(false)}
+                style={styles.closeButton}
               >
-                <MaterialCommunityIcons 
-                  name={token.icon} 
-                  size={24} 
-                  color={theme.colors.primary} 
-                />
-                <View style={styles.tokenInfo}>
-                  <Text style={styles.tokenSymbol}>{token.symbol}</Text>
-                  <Text style={styles.tokenName}>{token.name}</Text>
-                </View>
-                <View style={styles.tokenBalance}>
-                  <Text style={styles.tokenBalanceText}>
-                    {formatNumber(token.balance)} {token.symbol}
-                  </Text>
-                  <Text style={styles.tokenPrice}>
-                    ${formatUSD(token.price)}
-                  </Text>
-                </View>
+                <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+            
+            <View style={styles.searchContainer}>
+              <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.textSecondary} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by name or paste address"
+                placeholderTextColor={theme.colors.textSecondary}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+              {searchQuery && (
+                <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearSearchButton}>
+                  <MaterialCommunityIcons name="close" size={16} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={styles.contractAddressButton}
+              onPress={() => setShowContractInput(!showContractInput)}
+            >
+              <MaterialCommunityIcons 
+                name="plus-circle" 
+                size={20} 
+                color={theme.colors.primary} 
+              />
+              <Text style={styles.contractAddressText}>Add Custom Token</Text>
+            </TouchableOpacity>
+
+            {showContractInput && (
+              <View style={styles.contractInputContainer}>
+                <TextInput
+                  style={styles.contractInput}
+                  placeholder="Enter contract address"
+                  placeholderTextColor={theme.colors.textSecondary}
+                  value={contractAddress}
+                  onChangeText={setContractAddress}
+                  keyboardType="default"
+                />
+                <TouchableOpacity
+                  style={styles.addCustomTokenButton}
+                  onPress={handleContractAddressSubmit}
+                >
+                  <Text style={styles.addCustomTokenText}>Add Token</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <FlatList
+              data={filteredTokens}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.tokenItem}
+                  onPress={() => handleSelectToken(item)}
+                >
+                  <View style={styles.tokenIconContainer}>
+                    {typeof item.icon === 'string' ? (
+                      <MaterialCommunityIcons 
+                        name={item.icon} 
+                        size={32} 
+                        color={theme.colors.primary} 
+                      />
+                    ) : (
+                      <Image 
+                        source={item.icon} 
+                        style={styles.tokenModalImage}
+                        resizeMode="contain"
+                      />
+                    )}
+                  </View>
+                  <View style={styles.tokenInfo}>
+                    <Text style={styles.tokenSymbol}>{item.symbol}</Text>
+                    <Text style={styles.tokenName}>{item.name}</Text>
+                    <Text style={styles.tokenAddress} numberOfLines={1}>
+                      {item.address.slice(0, 8)}...{item.address.slice(-8)}
+                    </Text>
+                  </View>
+                  <View style={styles.tokenDetails}>
+                    <Text style={styles.tokenPrice}>
+                      ${formatUSD(item.price)}
+                    </Text>
+                    <Text style={styles.tokenBalance}>
+                      {formatNumber(item.balance)} {item.symbol}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.symbol}
+              ListEmptyComponent={() => (
+                <View style={styles.emptyList}>
+                  <MaterialCommunityIcons 
+                    name="magnify" 
+                    size={48} 
+                    color={theme.colors.textSecondary} 
+                  />
+                  <Text style={styles.emptyListText}>No tokens found</Text>
+                  <Text style={styles.emptyListSubtext}>
+                    Try searching with a different term or add a custom token
+                  </Text>
+                </View>
+              )}
+              contentContainerStyle={styles.tokenList}
+              showsVerticalScrollIndicator={false}
+            />
+          </View>
         </View>
-      </View>
+      </Modal>
     );
   };
 
@@ -330,68 +524,126 @@ const CreatePoolScreen = () => {
           <NeonCard style={styles.section}>
             <Text style={styles.sectionTitle}>Token Pair</Text>
             <View style={styles.tokenSelectionContainer}>
-              <TouchableOpacity
-                style={styles.tokenSelector}
-                onPress={() => openTokenSelector(1)}
-              >
-                <View style={styles.tokenDisplay}>
-                  {token1 ? (
-                    <>
-                      <MaterialCommunityIcons 
-                        name={token1.icon} 
-                        size={24} 
-                        color={theme.colors.primary} 
-                      />
-                      <Text style={styles.tokenSymbol}>{token1.symbol}</Text>
-                    </>
-                  ) : (
-                    <>
-                      <MaterialCommunityIcons 
-                        name="plus" 
-                        size={24} 
-                        color={theme.colors.textSecondary} 
-                      />
-                      <Text style={styles.tokenPlaceholder}>Select Token</Text>
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
-              
-              <View style={styles.tokenDivider}>
-                <MaterialCommunityIcons 
-                  name="arrow-right" 
-                  size={20} 
-                  color={theme.colors.textSecondary} 
-                />
+              {/* Base Token */}
+              <View style={styles.tokenInputContainer}>
+                <Text style={styles.tokenLabel}>Base Token</Text>
+                <TouchableOpacity
+                  style={styles.tokenSelectorButton}
+                  onPress={() => openTokenSelector(1)}
+                >
+                  <View style={styles.tokenDisplay}>
+                    {token1 ? (
+                      <>
+                        <View style={styles.tokenIconContainer}>
+                          {typeof token1.icon === 'string' ? (
+                            <MaterialCommunityIcons 
+                              name={token1.icon} 
+                              size={24} 
+                              color={theme.colors.primary} 
+                            />
+                          ) : (
+                            <Image 
+                              source={token1.icon} 
+                              style={styles.tokenImage}
+                              resizeMode="contain"
+                            />
+                          )}
+                        </View>
+                        <View style={styles.tokenInfo}>
+                          <Text style={styles.tokenSymbol}>{token1.symbol}</Text>
+                          <Text style={styles.tokenName}>{token1.name}</Text>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <View style={styles.tokenIconContainer}>
+                          <MaterialCommunityIcons 
+                            name="plus" 
+                            size={24} 
+                            color={theme.colors.textSecondary} 
+                          />
+                        </View>
+                        <View style={styles.tokenInfo}>
+                          <Text style={styles.tokenPlaceholder}>Select Base Token</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                  <MaterialCommunityIcons 
+                    name="chevron-down" 
+                    size={20} 
+                    color={theme.colors.textSecondary} 
+                  />
+                </TouchableOpacity>
               </View>
               
-              <TouchableOpacity
-                style={styles.tokenSelector}
-                onPress={() => openTokenSelector(2)}
-              >
-                <View style={styles.tokenDisplay}>
-                  {token2 ? (
-                    <>
-                      <MaterialCommunityIcons 
-                        name={token2.icon} 
-                        size={24} 
-                        color={theme.colors.secondary} 
-                      />
-                      <Text style={styles.tokenSymbol}>{token2.symbol}</Text>
-                    </>
-                  ) : (
-                    <>
-                      <MaterialCommunityIcons 
-                        name="plus" 
-                        size={24} 
-                        color={theme.colors.textSecondary} 
-                      />
-                      <Text style={styles.tokenPlaceholder}>Select Token</Text>
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
+              {/* Quote Token */}
+              <View style={styles.tokenInputContainer}>
+                <Text style={styles.tokenLabel}>Quote Token</Text>
+                <Text style={styles.tokenDescription}>
+                  SOL or stables (e.g. USDC, USDT) are usually used as the Quote token, which represents the price used to trade the Base token.
+                </Text>
+                <TouchableOpacity
+                  style={styles.tokenSelectorButton}
+                  onPress={() => openTokenSelector(2)}
+                >
+                  <View style={styles.tokenDisplay}>
+                    {token2 ? (
+                      <>
+                        <View style={styles.tokenIconContainer}>
+                          {typeof token2.icon === 'string' ? (
+                            <MaterialCommunityIcons 
+                              name={token2.icon} 
+                              size={24} 
+                              color={theme.colors.secondary} 
+                            />
+                          ) : (
+                            <Image 
+                              source={token2.icon} 
+                              style={styles.tokenImage}
+                              resizeMode="contain"
+                            />
+                          )}
+                        </View>
+                        <View style={styles.tokenInfo}>
+                          <Text style={styles.tokenSymbol}>{token2.symbol}</Text>
+                          <Text style={styles.tokenName}>{token2.name}</Text>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <View style={styles.tokenIconContainer}>
+                          <MaterialCommunityIcons 
+                            name="plus" 
+                            size={24} 
+                            color={theme.colors.textSecondary} 
+                          />
+                        </View>
+                        <View style={styles.tokenInfo}>
+                          <Text style={styles.tokenPlaceholder}>Select Quote Token</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                  <MaterialCommunityIcons 
+                    name="chevron-down" 
+                    size={20} 
+                    color={theme.colors.textSecondary} 
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
+            
+            {token1 && token2 && (
+              <View style={styles.tokenPairInfo}>
+                <Text style={styles.tokenPairText}>
+                  Creating {token1.symbol}/{token2.symbol} pool
+                </Text>
+                <Text style={styles.tokenPairSubtext}>
+                  {token1.name} • {token2.name}
+                </Text>
+              </View>
+            )}
           </NeonCard>
 
           {/* Safety Check */}
@@ -543,6 +795,256 @@ const CreatePoolScreen = () => {
             )}
           </NeonCard>
 
+          {/* DAMM V2 Specific Configuration */}
+          {poolType === 'DAMM V2' && (
+            <>
+              {/* Fee Tier Selection */}
+              <NeonCard style={styles.section}>
+                <Text style={styles.sectionTitle}>Fee Tier</Text>
+                <Text style={styles.sectionSubtitle}>The % pool will earn in fee</Text>
+                <View style={styles.feeTierContainer}>
+                  {['0.25', '0.3', '1', '2', '4', '6'].map((tier) => (
+                    <TouchableOpacity
+                      key={tier}
+                      style={[
+                        styles.feeTierButton,
+                        feeTier === tier && styles.feeTierButtonActive
+                      ]}
+                      onPress={() => setFeeTier(tier)}
+                    >
+                      <Text style={[
+                        styles.feeTierText,
+                        feeTier === tier && styles.feeTierTextActive
+                      ]}>
+                        {tier}%
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </NeonCard>
+
+              {/* Start Time Selection */}
+              <NeonCard style={styles.section}>
+                <Text style={styles.sectionTitle}>Start Time</Text>
+                <View style={styles.startTimeContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.startTimeButton,
+                      startTime === 'now' && styles.startTimeButtonActive
+                    ]}
+                    onPress={() => setStartTime('now')}
+                  >
+                    <Text style={[
+                      styles.startTimeText,
+                      startTime === 'now' && styles.startTimeTextActive
+                    ]}>
+                      Start Now
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.startTimeButton,
+                      startTime === 'custom' && styles.startTimeButtonActive
+                    ]}
+                    onPress={() => setStartTime('custom')}
+                  >
+                    <Text style={[
+                      styles.startTimeText,
+                      startTime === 'custom' && styles.startTimeTextActive
+                    ]}>
+                      Custom
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {startTime === 'custom' && (
+                  <View style={styles.customTimeContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter custom start time"
+                      placeholderTextColor={theme.colors.textSecondary}
+                      value={customStartTime}
+                      onChangeText={setCustomStartTime}
+                    />
+                  </View>
+                )}
+              </NeonCard>
+
+              {/* Pool's Fee Configuration */}
+              <NeonCard style={styles.section}>
+                <Text style={styles.sectionTitle}>Pool's Fee Configuration</Text>
+                
+                {/* Dynamic Fee */}
+                <View style={styles.configRow}>
+                  <View style={styles.configLabelContainer}>
+                    <Text style={styles.configLabel}>Dynamic Fee</Text>
+                  </View>
+                  <View style={styles.toggleContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.toggleButton,
+                        dynamicFee && styles.toggleButtonActive
+                      ]}
+                      onPress={() => setDynamicFee(true)}
+                    >
+                      <Text style={[
+                        styles.toggleText,
+                        dynamicFee && styles.toggleTextActive
+                      ]}>
+                        Yes
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.toggleButton,
+                        !dynamicFee && styles.toggleButtonActive
+                      ]}
+                      onPress={() => setDynamicFee(false)}
+                    >
+                      <Text style={[
+                        styles.toggleText,
+                        !dynamicFee && styles.toggleTextActive
+                      ]}>
+                        No
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Fee Collection Token */}
+                <View style={styles.configRow}>
+                  <View style={styles.configLabelContainer}>
+                    <Text style={styles.configLabel}>Fee Collection Token</Text>
+                    <MaterialCommunityIcons 
+                      name="help-circle" 
+                      size={16} 
+                      color={theme.colors.textSecondary} 
+                    />
+                  </View>
+                  <View style={styles.feeCollectionContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.feeCollectionButton,
+                        feeCollectionToken === 'both' && styles.feeCollectionButtonActive
+                      ]}
+                      onPress={() => setFeeCollectionToken('both')}
+                    >
+                      <MaterialCommunityIcons 
+                        name="currency-usd" 
+                        size={16} 
+                        color={feeCollectionToken === 'both' ? theme.colors.background : theme.colors.textSecondary} 
+                      />
+                      <Text style={[
+                        styles.feeCollectionText,
+                        feeCollectionToken === 'both' && styles.feeCollectionTextActive
+                      ]}>
+                        Base + Quote
+                      </Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={[
+                        styles.feeCollectionButton,
+                        feeCollectionToken === 'quote' && styles.feeCollectionButtonActive
+                      ]}
+                      onPress={() => setFeeCollectionToken('quote')}
+                    >
+                      <MaterialCommunityIcons 
+                        name="currency-usd" 
+                        size={16} 
+                        color={feeCollectionToken === 'quote' ? theme.colors.background : theme.colors.textSecondary} 
+                      />
+                      <Text style={[
+                        styles.feeCollectionText,
+                        feeCollectionToken === 'quote' && styles.feeCollectionTextActive
+                      ]}>
+                        Quote
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Fee Scheduler */}
+                <View style={styles.configRow}>
+                  <View style={styles.configLabelContainer}>
+                    <Text style={styles.configLabel}>Fee Scheduler</Text>
+                  </View>
+                  <View style={styles.toggleContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.toggleButton,
+                        feeScheduler && styles.toggleButtonActive
+                      ]}
+                      onPress={() => setFeeScheduler(true)}
+                    >
+                      <Text style={[
+                        styles.toggleText,
+                        feeScheduler && styles.toggleTextActive
+                      ]}>
+                        Yes
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.toggleButton,
+                        !feeScheduler && styles.toggleButtonActive
+                      ]}
+                      onPress={() => setFeeScheduler(false)}
+                    >
+                      <Text style={[
+                        styles.toggleText,
+                        !feeScheduler && styles.toggleTextActive
+                      ]}>
+                        No
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Fee Scheduler Mode */}
+                {feeScheduler && (
+                  <View style={styles.configRow}>
+                    <View style={styles.configLabelContainer}>
+                      <Text style={styles.configLabel}>Fee Scheduler Mode</Text>
+                    </View>
+                    <View style={styles.schedulerModeContainer}>
+                      <TouchableOpacity
+                        style={[
+                          styles.schedulerModeButton,
+                          feeSchedulerMode === 'exponential' && styles.schedulerModeButtonActive
+                        ]}
+                        onPress={() => setFeeSchedulerMode('exponential')}
+                      >
+                        <Text style={[
+                          styles.schedulerModeText,
+                          feeSchedulerMode === 'exponential' && styles.schedulerModeTextActive
+                        ]}>
+                          Exponential
+                        </Text>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                        style={[
+                          styles.schedulerModeButton,
+                          feeSchedulerMode === 'linear' && styles.schedulerModeButtonActive
+                        ]}
+                        onPress={() => setFeeSchedulerMode('linear')}
+                      >
+                        <Text style={[
+                          styles.schedulerModeText,
+                          feeSchedulerMode === 'linear' && styles.schedulerModeTextActive
+                        ]}>
+                          Linear
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </NeonCard>
+            </>
+          )}
+
           {/* Submit Button */}
           <View style={styles.submitContainer}>
             <NeonButton
@@ -587,6 +1089,11 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: 16,
   },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginBottom: 16,
+  },
   poolTypeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -617,12 +1124,28 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   tokenSelectionContainer: {
+    flexDirection: 'column', // Changed to column
+    alignItems: 'stretch', // Changed to stretch
+    gap: 16, // Added gap between token inputs
+  },
+  tokenInputContainer: {
+    // Added styles for token input container
+  },
+  tokenLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: 8,
+  },
+  tokenDescription: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginBottom: 12,
+  },
+  tokenSelectorButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  tokenSelector: {
-    flex: 1,
     backgroundColor: theme.colors.surface,
     borderRadius: 12,
     borderWidth: 1,
@@ -632,26 +1155,60 @@ const styles = StyleSheet.create({
   tokenDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+  },
+  tokenIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.surfaceVariant,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  tokenInfo: {
+    flex: 1,
   },
   tokenSymbol: {
     fontSize: 16,
     fontWeight: 'bold',
     color: theme.colors.text,
-    marginLeft: 8,
+  },
+  tokenName: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
   },
   tokenPlaceholder: {
     fontSize: 16,
     color: theme.colors.textSecondary,
-    marginLeft: 8,
   },
   tokenDivider: {
     marginHorizontal: 16,
   },
+  tokenPairInfo: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  tokenPairText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  tokenPairSubtext: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginTop: 4,
+  },
   safetyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   safetyTitle: {
     fontSize: 16,
@@ -677,30 +1234,31 @@ const styles = StyleSheet.create({
   },
   amountLabel: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    fontWeight: 'bold',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: theme.colors.surfaceVariant,
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: theme.colors.text,
     borderWidth: 1,
     borderColor: theme.colors.outline,
+    padding: 12,
+    fontSize: 16,
+    color: theme.colors.text,
+    marginBottom: 8,
   },
   balanceText: {
     fontSize: 12,
     color: theme.colors.textSecondary,
-    marginTop: 4,
   },
   configItem: {
     marginBottom: 16,
   },
   configLabel: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    fontWeight: 'bold',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   feeTypeContainer: {
@@ -709,101 +1267,327 @@ const styles = StyleSheet.create({
   },
   feeTypeButton: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    alignItems: 'center',
+    padding: 12,
     backgroundColor: theme.colors.surface,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: theme.colors.outline,
     marginHorizontal: 2,
-    alignItems: 'center',
   },
   feeTypeButtonActive: {
     borderColor: theme.colors.primary,
     backgroundColor: theme.colors.primary + '20',
   },
   feeTypeText: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
+    fontSize: 14,
+    color: theme.colors.text,
   },
   feeTypeTextActive: {
     color: theme.colors.primary,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   submitContainer: {
     marginTop: 24,
   },
   submitButton: {
-    marginBottom: 12,
+    width: '100%',
   },
   connectWarning: {
     fontSize: 14,
     color: theme.colors.warning,
     textAlign: 'center',
+    marginTop: 12,
   },
-  tokenSelectorOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  modalOverlay: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   tokenSelector: {
+    width: '90%',
+    maxHeight: '80%',
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 20,
-    width: '90%',
-    maxHeight: '80%',
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
   },
   tokenSelectorHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   tokenSelectorTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: theme.colors.text,
   },
+  closeButton: {
+    padding: 8,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.colors.text,
+    marginLeft: 12,
+  },
+  clearSearchButton: {
+    padding: 8,
+  },
+  contractAddressButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  contractAddressText: {
+    fontSize: 14,
+    color: theme.colors.primary,
+    marginLeft: 8,
+    fontWeight: '600',
+  },
+  contractInputContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  contractInput: {
+    fontSize: 16,
+    color: theme.colors.text,
+    paddingVertical: 8,
+  },
+  addCustomTokenButton: {
+    marginTop: 12,
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 8,
+  },
+  addCustomTokenText: {
+    fontSize: 14,
+    color: theme.colors.background,
+    fontWeight: '600',
+  },
   tokenList: {
-    maxHeight: 400,
+    flexGrow: 1,
+  },
+  emptyList: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyListText: {
+    fontSize: 16,
+    color: theme.colors.textSecondary,
+    marginTop: 12,
+  },
+  emptyListSubtext: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginTop: 4,
+    textAlign: 'center',
   },
   tokenItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.outline,
   },
-  tokenInfo: {
-    flex: 1,
-    marginLeft: 12,
+  tokenDetails: {
+    alignItems: 'flex-end',
   },
-  tokenSymbol: {
+  tokenPrice: {
+    fontSize: 14,
+    color: theme.colors.text,
+  },
+  tokenBalance: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  tokenAddress: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  // DAMM-specific styles
+  feeTierContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  feeTierButton: {
+    width: '30%',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    marginBottom: 8,
+  },
+  feeTierButtonActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '20',
+  },
+  feeTierText: {
+    fontSize: 14,
+    color: theme.colors.text,
+    fontWeight: '600',
+  },
+  feeTierTextActive: {
+    color: theme.colors.primary,
+  },
+  startTimeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  startTimeButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    marginHorizontal: 4,
+  },
+  startTimeButtonActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary,
+  },
+  startTimeText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: theme.colors.text,
   },
-  tokenName: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
+  startTimeTextActive: {
+    color: theme.colors.background,
   },
-  tokenBalance: {
-    alignItems: 'flex-end',
+  customTimeContainer: {
+    marginTop: 16,
   },
-  tokenBalanceText: {
+  configRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.outline,
+  },
+  configLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  toggleButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+  toggleButtonActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  toggleText: {
     fontSize: 14,
     color: theme.colors.text,
+    fontWeight: '600',
   },
-  tokenPrice: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
+  toggleTextActive: {
+    color: theme.colors.background,
+  },
+  feeCollectionContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  feeCollectionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  feeCollectionButtonActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  feeCollectionText: {
+    fontSize: 14,
+    color: theme.colors.text,
+    marginLeft: 4,
+    fontWeight: '600',
+  },
+  feeCollectionTextActive: {
+    color: theme.colors.background,
+  },
+  schedulerModeContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  schedulerModeButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+  },
+  schedulerModeButtonActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  schedulerModeText: {
+    fontSize: 14,
+    color: theme.colors.text,
+    fontWeight: '600',
+  },
+  schedulerModeTextActive: {
+    color: theme.colors.background,
+  },
+  tokenImage: {
+    width: 24,
+    height: 24,
+  },
+  tokenModalImage: {
+    width: 32,
+    height: 32,
   },
 });
 
