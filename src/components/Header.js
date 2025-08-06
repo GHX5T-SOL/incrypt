@@ -1,16 +1,14 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from 'react-native-paper';
 import { WalletContext } from '../contexts/WalletProvider';
-import { useWallet } from '../hooks/useWallet';
+import { useWallet } from '../contexts/WalletProvider';
 import { formatAddress } from '../utils/format';
 import { theme } from '../theme';
 
 const Header = ({ title, showWalletButton = true, onWalletPress }) => {
   const { connected, connecting, getWalletAddress, getShortAddress } = useWallet();
   const { connect, disconnect } = useContext(WalletContext);
-  const themeColors = useTheme();
 
   const handleWalletPress = () => {
     if (connected) {
