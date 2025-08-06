@@ -9,7 +9,8 @@ import {
   Dimensions,
   Animated,
   Alert,
-  SafeAreaView
+  SafeAreaView,
+  Image
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -34,7 +35,13 @@ const DashboardScreen = () => {
     };
   }
   
-  let walletData = { connected: false, balance: 0, getShortAddress: () => '' };
+  let walletData = { 
+    connected: false, 
+    balance: 0, 
+    getShortAddress: () => '', 
+    connect: () => console.log('Connect not available'),
+    disconnect: () => console.log('Disconnect not available')
+  };
   try {
     walletData = useWallet();
   } catch (error) {
@@ -48,7 +55,7 @@ const DashboardScreen = () => {
     console.log('Meteora hook not available, using fallback');
   }
   
-  const { connected, balance, getShortAddress } = walletData;
+  const { connected, balance, getShortAddress, connect, disconnect } = walletData;
   const { pools, loading: meteoraLoading, fetchPools } = meteoraData;
   
   const [refreshing, setRefreshing] = useState(false);
@@ -215,27 +222,13 @@ const DashboardScreen = () => {
         }
       >
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          {/* Welcome Section */}
-          <View style={styles.welcomeSection}>
-            <View style={styles.welcomeHeader}>
-              <MaterialCommunityIcons 
-                name={connected ? "wallet" : "wallet-outline"} 
-                size={32} 
-                color={connected ? theme.colors.success : theme.colors.primary} 
-                style={styles.welcomeIcon}
-              />
-              <View style={styles.welcomeTextContainer}>
-                <Text style={styles.welcomeTitle}>
-                  {connected ? 'Welcome back!' : 'Welcome to Incrypt!'}
-                </Text>
-                <Text style={styles.welcomeSubtitle}>
-                  {connected 
-                    ? `${getShortAddress()} • ${formatSOL(balance * 1e9)} SOL`
-                    : 'Connect your wallet to start earning 💰'
-                  }
-                </Text>
-              </View>
-            </View>
+          {/* Logo Section */}
+          <View style={styles.logoSection}>
+            <Image 
+              source={require('../../assets/logo-neon.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
 
           {/* Quick Stats */}
@@ -455,10 +448,17 @@ const DashboardScreen = () => {
         onPress={() => {
           if (connected) {
             // Show wallet options
-            Alert.alert('Wallet Connected', 'Manage your wallet settings');
+            Alert.alert(
+              'Wallet Connected', 
+              `Address: ${getShortAddress()}\nBalance: ${formatSOL(balance * 1e9)} SOL`,
+              [
+                { text: 'Disconnect', onPress: () => disconnect(), style: 'destructive' },
+                { text: 'Cancel', style: 'cancel' }
+              ]
+            );
           } else {
             // Connect wallet
-            Alert.alert('Connect Wallet', 'Opening wallet connection...');
+            connect();
           }
         }}
         activeOpacity={0.8}
@@ -488,30 +488,14 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 10,
   },
-  welcomeSection: {
+  logoSection: {
+    alignItems: 'center',
     marginBottom: 30,
     marginTop: 10,
   },
-  welcomeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  welcomeIcon: {
-    marginRight: 12,
-  },
-  welcomeTextContainer: {
-    flex: 1,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: theme.colors.textSecondary,
+  logo: {
+    width: width * 0.6,
+    height: width * 0.2,
   },
   statsContainer: {
     flexDirection: 'row',
