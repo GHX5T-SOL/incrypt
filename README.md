@@ -3,7 +3,7 @@
   
   # Incrypt
   
-  **Mobile DeFi Hub for Solana**
+  **Mobile DeFi Hub with AI Intelligence for Solana**
   
   [![React Native](https://img.shields.io/badge/React%20Native-0.73-blue.svg)](https://reactnative.dev/)
   [![Expo](https://img.shields.io/badge/Expo-49.0.0-black.svg)](https://expo.dev/)
@@ -17,7 +17,38 @@
 
 ## 🚀 **About Incrypt**
 
-Incrypt is a comprehensive mobile DeFi application built for the Solana blockchain, designed to provide users with seamless access to liquidity farming, lending, borrowing, and token safety analysis - all from their mobile device.
+Incrypt is a comprehensive mobile DeFi application built for the Solana blockchain, designed to provide users with seamless access to liquidity farming, lending, borrowing, and token safety analysis - all from their mobile device and using AI Intelligence to build De-fi Yield Strategies
+
+### 🤖 **IncryptAI - Your AI DeFi Companion**
+
+IncryptAI is the revolutionary AI-powered feature that transforms how you interact with DeFi on Solana. Powered by advanced AI technology, IncryptAI provides:
+
+**🎯 Core Capabilities:**
+- **Yield Strategy Optimization** - Get personalized recommendations for Meteora DLMM/DAMM strategies with real-time APR calculations and risk assessments
+- **Leveraged Farming Design** - Create complex strategies combining Kamino lending with Meteora liquidity provision for maximum yield
+- **Token Safety Analysis** - Instantly analyze any token using Rugcheck and DexScreener data for comprehensive risk assessment
+- **Market Intelligence** - Receive real-time insights on Solana DeFi trends, opportunities, and emerging protocols
+- **Strategy Building** - Step-by-step guides for complex DeFi operations with cyberpunk-themed explanations
+
+**💡 How It Works:**
+- **Natural Language Interface** - Ask questions in plain English like "What's the best yield strategy for SOL-USDC on Meteora?"
+- **Real-time Data Integration** - AI pulls live data from Meteora, Kamino, MarginFi, Rugcheck, and DexScreener
+- **Personalized Responses** - Get tailored advice based on your risk tolerance and investment goals
+- **Actionable Insights** - Receive specific, implementable strategies with clear steps and risk warnings
+
+**🔒 Security & Compliance:**
+- **No Financial Advice** - All responses include appropriate disclaimers
+- **DYOR Emphasis** - Always encourages users to do their own research
+- **Risk Warnings** - Comprehensive risk disclosures for all strategies
+- **Privacy First** - No sensitive data stored in chat history
+
+**🎨 Cyberpunk Aesthetic:**
+- **Neon Glow Effects** - Stunning visual feedback with animated neon borders
+- **Dark Theme** - Easy on the eyes with high contrast readability
+- **Markdown Support** - Rich formatting for strategies, code blocks, and lists
+- **Responsive Design** - Optimized for mobile with keyboard-avoiding views
+
+IncryptAI represents the future of DeFi interaction - combining the power of artificial intelligence with the cutting-edge protocols of Solana to create an unparalleled user experience.
 
 ### 🎯 **Built for Solana Mobile Hackathon**
 
@@ -183,6 +214,14 @@ incrypt/
 - **Liquidity Analysis** - Check liquidity depth
 - **Contract Verification** - Verify smart contract authenticity
 - **Risk Assessment** - Multi-factor risk evaluation
+
+### **🤖 IncryptAI**
+- **AI-Powered Chat Interface** - Natural language DeFi assistance
+- **Yield Strategy Optimization** - Personalized Meteora recommendations
+- **Token Safety Analysis** - Instant risk assessment via AI
+- **Leveraged Farming Design** - Complex strategy creation
+- **Market Intelligence** - Real-time DeFi insights and trends
+- **Cyberpunk Aesthetic** - Stunning neon UI with markdown support
 
 ### **🔒 Security Features**
 - **Biometric Authentication** - Enhanced security

@@ -10,6 +10,7 @@ import PoolsScreen from '../screens/PoolsScreen';
 import PositionsScreen from '../screens/PositionsScreen';
 import LendingScreen from '../screens/LendingScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import IncryptAIScreen from '../screens/IncryptAIScreen';
 
 // Pool Screens
 import PoolDetailScreen from '../screens/PoolDetailScreen';
@@ -131,6 +132,18 @@ const SettingsStack = () => (
   </Stack.Navigator>
 );
 
+const IncryptAIStack = () => (
+  <Stack.Navigator 
+    screenOptions={{ 
+      header: ({ route }) => (
+        <Header title="IncryptAI" />
+      ),
+    }}
+  >
+    <Stack.Screen name="IncryptAIMain" component={IncryptAIScreen} />
+  </Stack.Navigator>
+);
+
 // Main tab navigator with bottom navigation
 const TabNavigator = () => {
   return (
@@ -147,6 +160,8 @@ const TabNavigator = () => {
             iconName = focused ? 'chart-line' : 'chart-line';
           } else if (route.name === 'Lending') {
             iconName = focused ? 'bank' : 'bank-outline';
+          } else if (route.name === 'IncryptAI') {
+            iconName = focused ? 'brain' : 'brain';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'cog' : 'cog-outline';
           }
@@ -189,6 +204,11 @@ const TabNavigator = () => {
         name="Lending" 
         component={LendingStack}
         options={{ tabBarLabel: 'Lending' }}
+      />
+      <Tab.Screen 
+        name="IncryptAI" 
+        component={IncryptAIStack}
+        options={{ tabBarLabel: 'IncryptAI' }}
       />
       <Tab.Screen 
         name="Settings" 

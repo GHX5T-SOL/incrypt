@@ -24,7 +24,7 @@ const slides = [
     id: '1',
     title: 'Welcome to Incrypt',
     subtitle: 'Your Mobile DeFi Hub',
-    description: 'The ultimate mobile platform for Meteora liquidity farming and DeFi lending on Solana. Experience seamless trading with advanced yield strategies.',
+    description: 'The ultimate mobile platform for Meteora liquidity farming and DeFi lending on Solana. Experience seamless trading with advanced yield strategies and AI Intelligence.',
     image: require('../../assets/logo-primary.png'), // Replace with your actual logo
     color: theme.colors.primary,
   },
@@ -51,6 +51,14 @@ const slides = [
     description: 'Leverage your positions up to 5x, auto-compound your rewards, and optimize your yield with our intelligent strategy recommendations.',
     image: require('../../assets/logo-primary.png'), // Replace with your actual image
     color: theme.colors.neonBlue,
+  },
+  {
+    id: '5',
+    title: 'AI Intelligence',
+    subtitle: 'IncryptAI Companion',
+    description: 'Your personal AI DeFi expert. Ask about strategies, analyze token safety, build custom yields, and get real-time insights powered by advanced AI.',
+    image: require('../../assets/logo-primary.png'), // Replace with your actual image
+    color: '#00FF9F', // Greenish neon color for AI
   },
 ];
 
